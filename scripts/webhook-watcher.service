@@ -1,0 +1,18 @@
+[Unit]
+Description=Webhook Watcher for Docker Swarm Deploys
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/dockerswarmp1
+ExecStart=/opt/dockerswarmp1/scripts/watcher
+Restart=always
+RestartSec=3
+User=luizotavio
+Group=luizotavio
+Environment=WEBHOOKS_JOBS_DIR=/mnt/nfs/webhook_jobs
+Environment=DEPLOY_COMMAND=just stack-deploy
+
+[Install]
+WantedBy=multi-user.target

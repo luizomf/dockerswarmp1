@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# vim:sw=2:ts=2:et:set filetype=bash :
+
+# ################################################################################
+# # Author: Luiz Otvio Miranda <luizomf@gmail.com>
+# # Date: 2026-02-05
+# # License: MIT
+# ################################################################################
+
+set -Eeuo pipefail
+
+PARENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INTERVAL="${INTERVAL:-30}" # seconds
+WEBHOOKS_JOBS_DIR="${WEBHOOKS_JOBS_DIR:-/mnt/nfs/webhook_jobs}"
+LOCK_FILE="${LOCK_FILE:-/tmp/webhook_deploy.lock}"
+DEPLOY_COMMAND="${DEPLOY_COMMAND:-just stack-deploy}"
+
+mkdir -p "$WEBHOOKS_JOBS_DIR"
+
+log() {
+  echo "[$(date +"%s")] $*"
+}
+
+log "Watcher started. Jobs dir: $WEBHOOKS_JOBS_DIR | Lock: $LOCK_FILE"
+
+while true; do
+  HAS_JOBS=$(ls -A "$WEBHOOKS_JOBS_DIR" 2>/dev/null | head -n 1 || true)
+
+  if [[ -z "$HAS_JOBS" ]]; then
+    sleep "$INTERVAL"
+    continue
+  fi
+
+  (
+    flock -n 200 || exit 1
+
+    log "Jobs detected. Debounce and deploy..."
+
+    rm -f "$WEBHOOKS_JOBS_DIR"/* || true
+
+    if (cd "$PARENT_DIR" && $DEPLOY_COMMAND); then
+      log "Deploy success."
+    else
+      log "Deploy failed."
+    fi
+
+  ) 200>"$LOCK_FILE"
+
+  if [[ $? -eq 1 ]]; then
+    log "Deploy already in progress. Skipping..."
+  fi
+
+  sleep "$INTERVAL"
+done

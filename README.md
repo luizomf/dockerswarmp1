@@ -57,6 +57,27 @@ Label the KVM8 node (for fixed services):
 docker node update --label-add role=kvm8 kvm8
 ```
 
+## Webhook Watcher (KVM8)
+
+The webhook endpoint writes job files into `/mnt/nfs/webhook_jobs`. The watcher
+checks this folder and triggers a deploy (debounced).
+
+Install and run:
+
+```bash
+just watcher-install
+```
+
+Follow logs:
+
+```bash
+just watcher-logs
+```
+
+Service file used by systemd:
+
+- `/opt/dockerswarmp1/scripts/webhook-watcher.service`
+
 ## NFS (KVM8)
 
 Server export (`/etc/exports` on KVM8):
