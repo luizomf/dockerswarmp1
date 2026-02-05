@@ -11,6 +11,8 @@ All notable changes to this project are documented here. This file records
 - Aligned package metadata with module name and fixed test imports
 - Added Swarm stack definition with Traefik, API, frontend, and Postgres
 - Added Swarm env placeholders for Traefik domains and Postgres credentials
+- Switched Traefik routing to a single public domain with API path prefix
+- Documented node inventory and domain mapping
 
 ## 2026-02-05
 
