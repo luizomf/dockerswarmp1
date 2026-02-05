@@ -14,6 +14,7 @@ All notable changes to this project are documented here. This file records
 - Switched Traefik routing to a single public domain with API path prefix
 - Documented node inventory and domain mapping
 - Updated default public domain to use a subdomain
+- Adjusted Traefik and Postgres update strategy for Swarm host ports
 
 ## 2026-02-05
 
