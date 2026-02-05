@@ -120,6 +120,10 @@ volumes:
     driver: local
   webhook_jobs:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/nfs/webhook_jobs
 
 # Required env vars before deploy:
 # EMAIL, GITHUB_WEBHOOK_SECRET, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD,

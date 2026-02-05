@@ -19,6 +19,7 @@ All notable changes to this project are documented here. This file records
 - Fixed CI workflow Dockerfile path for API builds
 - Documented local run steps and exposed API port in Compose
 - Fixed GHCR image tagging to avoid invalid references
+- Pointed webhook job storage to NFS-mounted path
 
 ## 2026-02-05
 

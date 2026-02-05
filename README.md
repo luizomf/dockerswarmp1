@@ -56,3 +56,23 @@ Label the KVM8 node (for fixed services):
 ```bash
 docker node update --label-add role=kvm8 kvm8
 ```
+
+## NFS (KVM8)
+
+Server export (`/etc/exports` on KVM8):
+
+```
+/srv/nfs/swarm_data 10.100.0.0/24(rw,sync,no_subtree_check,fsid=0)
+```
+
+Client mount (`/etc/fstab` on all nodes):
+
+```
+10.100.0.8:/ /mnt/nfs nfs4 rw,vers=4.2,_netdev,noatime 0 0
+```
+
+Shared path for the API webhook jobs:
+
+```
+/mnt/nfs/webhook_jobs
+```
