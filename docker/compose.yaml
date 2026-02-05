@@ -1,0 +1,37 @@
+# vim:sw=2:ts=2:et:set filetype=yaml :
+
+services:
+  dockerswarm1:
+    pull_policy: never
+    image: dockerswarmp1
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.api
+      target: production
+      args:
+        - APP_UID=1011
+        - APP_GID=1011
+    restart: unless-stopped
+    volumes:
+      - ../scripts:/scripts:ro
+      - ./volumes/webhook_jobs:/app/webhook_jobs:rw
+    env_file:
+      - ../.env
+    healthcheck:
+      test: ['CMD', 'healthcheck']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # depends_on:
+    #   data_vol:
+    #     condition: service_started
+    networks:
+      main_network:
+
+networks:
+  main_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: '10.11.12.0/24'

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# vim:sw=2:ts=2:et:set filetype=bash :
+
+# ################################################################################
+# # Author: Luiz Otávio Miranda <luizomf@gmail.com>
+# # Date: 2026-01-10
+# # License: MIT
+# ################################################################################
+
+# We are using Uvicorn directly because benchmarks showed it outperformed
+# Gunicorn + Uvicorn Workers in this specific containerized setup (10k vs 7k req/s).
+# Docker handles the process management (restarts, scaling).
+
+exec uvicorn src.dockerswarmp1.main:app \
+     --host 0.0.0.0 \
+     --port 8000 \
+     --workers 1 \
+     --loop uvloop \
+     --http httptools \
+     --no-access-log \
+     --log-level warning \
+     --proxy-headers \
+     ;
+

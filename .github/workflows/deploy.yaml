@@ -1,0 +1,185 @@
+name: Build Full Stack
+
+# TRIGGERS
+# Este workflow roda toda vez que fazemos push para o branch 'main'.
+on:
+  # # Se quiser rodar apenas manualmente
+  # workflow_dispatch:
+
+  # # Se quiser que rode ao fazer push no 'main'
+  # Ignore arquivos irrelevantes (tipo README.md, etc).
+  push:
+    branches: ['main']
+    paths-ignore:
+      - '**/*.md'
+      - '.gitignore'
+      - 'docs/**'
+      - 'LICENSE'
+      - 'Justfile'
+
+# CONCURRENCY
+# Concorrêcia
+# Garante que o deploy aconteça em ordem.
+# 'cancel-in-progress: false' significa: Se eu enviar o commit A, depois o B,
+# espera o A terminar antes de iniciar o B.
+# Também previne race conditions.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  REPO: ${{ github.repository }}
+
+jobs:
+  # JOB 1: Checagem de qualidade
+  # Este é o primeiro a roda. Se seu código não tem tipagem, ou não segue regras
+  # você pode ficar preso aqui.
+  tests-typechecking-lint:
+    runs-on: ubuntu-latest
+    # if: ${{ false }} # Se você descomentar essa linha, esse job será pulado
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: 'uv.lock'
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Type Check with pyright
+        run: uv run pyright
+
+      - name: Lint with Ruff
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Run tests
+        run: uv run pytest
+
+  # JOB 2: Faz a build das imagens do Docker
+  # Só roda se o job anterior passar.
+  build-and-push:
+    runs-on: ubuntu-latest
+    # if: ${{ false }} # Se você descomentar essa linha, esse job será pulado
+    needs: tests-typechecking-lint
+    permissions:
+      contents: read
+      packages: write # Para enviar para o GHCR
+
+    # STRATEGY MATRIX
+    # Isso serve para executar os mesmos passos para vários items.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Main App
+          - service: api
+            dockerfile: ./Dockerfile.api
+            target: production # Multi-stage build com target
+          # Nginx
+          # - service: nginx
+          #   dockerfile: ./Dockerfile.nginx
+          #   target: '' # Sem target
+          # Certbot
+          # - service: certbot
+          #   dockerfile: ./Dockerfile.certbot
+          #   target: ''
+          # Data Volume
+          # - service: data_vol
+          #   dockerfile: ./Dockerfile.data_vol
+          #   target: ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Gera as tags
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.REPO }}-${{ matrix.service }}:{{ github.sha }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=long
+
+      # Aqui é a build em si
+      # Isso faz a build e envia para o GitHub Container Registry (vira package)
+      # Usa a matrix definida acima
+      - name: Build & Push (${{ matrix.service }})
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache faz as novas builds serem mais rápidas
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Garante que UID e GID do usuário do app será este valor
+          build-args: |
+            APP_UID=1011
+            APP_GID=1011
+
+  # JOB 3: Notifica o server via webhook
+  # Só roda se todos os jobs anteriores pasarrem
+  notify-server:
+    runs-on: ubuntu-latest
+    # if: ${{ false }} # Se você descomentar essa linha, esse job será pulado
+    needs: build-and-push
+    steps:
+      - name: Call deploy webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+          WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+          SHA: ${{ github.sha }}
+          REF: refs/heads/main
+        run: |
+          set -Eeuo pipefail
+
+          # Cria o payload
+          PAYLOAD=$(python3 - <<'PY'
+          import json, os
+          payload = {"ref": os.environ["REF"], "after": os.environ["SHA"]}
+          print(json.dumps(payload, separators=( ",", ":" )))
+          PY
+          )
+          export PAYLOAD
+
+          # Assina o payload por segurança (HMAC SHA256)
+          # O servidor precisa ter o mesmo secret para validar a assinatura.
+          SIGNATURE=$(python3 - <<'PY'
+          import hmac, hashlib, os
+          secret = os.environ["WEBHOOK_SECRET"].encode()
+          payload = os.environ["PAYLOAD"].encode()
+          print("sha256=" + hmac.new(secret, payload, hashlib.sha256).hexdigest())
+          PY
+          )
+
+          # Enviar a request do webhook
+          echo "Triggering deploy webhook..."
+          curl -fsS -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: push" \
+            -H "X-Hub-Signature-256: $SIGNATURE" \
+            -d "$PAYLOAD" \
+            "$WEBHOOK_URL"
