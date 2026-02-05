@@ -1,0 +1,118 @@
+# vim:sw=2:ts=2:et:set filetype=yaml :
+
+version: "3.9"
+
+x-deploy-defaults: &deploy_defaults
+  update_config:
+    parallelism: 1
+    order: start-first
+  restart_policy:
+    condition: on-failure
+
+services:
+  traefik:
+    image: traefik:v3.3
+    command:
+      - --providers.docker=true
+      - --providers.docker.swarmmode=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=public
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.email=${EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+    ports:
+      - target: 80
+        published: 80
+        mode: host
+      - target: 443
+        published: 443
+        mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - public
+    deploy:
+      <<: *deploy_defaults
+      placement:
+        constraints:
+          - node.labels.role == kvm8
+
+  api:
+    image: ghcr.io/luizomf/dockerswarmp1-api:latest
+    environment:
+      - CURRENT_ENV=production
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    networks:
+      - public
+      - internal
+    volumes:
+      - webhook_jobs:/app/webhook_jobs
+    deploy:
+      <<: *deploy_defaults
+      replicas: 2
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.api.rule=Host(`${API_DOMAIN}`)
+        - traefik.http.routers.api.entrypoints=websecure
+        - traefik.http.routers.api.tls=true
+        - traefik.http.routers.api.tls.certresolver=le
+        - traefik.http.services.api.loadbalancer.server.port=8000
+
+  frontend:
+    image: ghcr.io/luizomf/dockerswarmp1-frontend:latest
+    networks:
+      - public
+    deploy:
+      <<: *deploy_defaults
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.frontend.rule=Host(`${APP_DOMAIN}`)
+        - traefik.http.routers.frontend.entrypoints=websecure
+        - traefik.http.routers.frontend.tls=true
+        - traefik.http.routers.frontend.tls.certresolver=le
+        - traefik.http.services.frontend.loadbalancer.server.port=80
+
+  postgres:
+    image: postgres:18
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - internal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      <<: *deploy_defaults
+      placement:
+        constraints:
+          - node.labels.role == kvm8
+
+networks:
+  public:
+    driver: overlay
+    attachable: true
+  internal:
+    driver: overlay
+    attachable: true
+    internal: true
+
+volumes:
+  traefik_letsencrypt:
+    driver: local
+  postgres_data:
+    driver: local
+  webhook_jobs:
+    driver: local
+
+# Required env vars before deploy:
+# EMAIL, GITHUB_WEBHOOK_SECRET, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD,
+# API_DOMAIN, APP_DOMAIN.

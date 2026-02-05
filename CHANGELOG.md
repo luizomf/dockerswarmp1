@@ -9,6 +9,7 @@ All notable changes to this project are documented here. This file records
 - Added root AGENTS.md defining AI workflow rules
 - Established CHANGELOG.md as the single source of change history
 - Aligned package metadata with module name and fixed test imports
+- Added Swarm stack definition with Traefik, API, frontend, and Postgres
 
 ## 2026-02-05
 
