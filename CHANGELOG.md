@@ -13,6 +13,7 @@ All notable changes to this project are documented here. This file records
 - Added Swarm env placeholders for Traefik domains and Postgres credentials
 - Switched Traefik routing to a single public domain with API path prefix
 - Documented node inventory and domain mapping
+- Updated default public domain to use a subdomain
 
 ## 2026-02-05
 

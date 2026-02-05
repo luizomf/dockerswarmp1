@@ -11,5 +11,5 @@
 Notes
 
 - Only `kvm8` is exposed to the public internet (Traefik edge).
-- `myswarm.cloud` is the single public domain for frontend and API.
+- `app.myswarm.cloud` is the single public domain for frontend and API.
 - `kvm2` and `kvm4` are locked down by the firewall.
