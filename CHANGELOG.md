@@ -21,6 +21,7 @@ All notable changes to this project are documented here. This file records
 - Fixed GHCR image tagging to avoid invalid references
 - Pointed webhook job storage to NFS-mounted path
 - Added swarm deploy watcher scripts and Just recipes
+- Added nginx-based frontend image for Swarm
 
 ## 2026-02-05
 

@@ -1,0 +1,220 @@
+:root {
+  /* ===== BASE ===== */
+  --bg: #050814;
+  --bg-elev: #0a1124;
+
+  /* ===== SURFACES ===== */
+  --card: rgba(12, 18, 38, 0.88);
+  --card-soft: rgba(12, 18, 38, 0.6);
+
+  /* ===== TEXT ===== */
+  --text: #e6eeff;
+  --text-muted: #8fa6cc;
+
+  /* ===== ACCENTS ===== */
+  --accent: #00d4ff; /* cyan principal */
+  --accent-soft: rgba(0, 212, 255, 0.15);
+
+  /* ===== AMBIENT COLOR ===== */
+  --ambient: #7b5cff; /* roxo ambiente */
+
+  /* ===== LINES ===== */
+  --line: rgba(0, 212, 255, 0.22);
+
+  /* ===== SEMANTIC ===== */
+  --danger: #ff5a70;
+
+  /* ===== GLOW ===== */
+  --glow-cyan: rgba(0, 212, 255, 0.6);
+  --glow-purple: rgba(123, 92, 255, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+  background-color: var(--bg);
+  line-height: 1.5;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== BACKGROUND AMBIENT ===== */
+
+.nebula {
+  position: fixed;
+  inset: -15% -10%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.8;
+
+  background-image:
+    radial-gradient(
+      ellipse 60% 40% at 18% 18%,
+      rgba(123, 92, 255, 0.15),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 60% at 80% 30%,
+      rgba(0, 212, 255, 0.12),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 70% 60% at 60% 85%,
+      rgba(123, 92, 255, 0.12),
+      transparent 62%
+    );
+}
+
+.stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+  background-size: 320px 200px;
+  opacity: 0.6;
+
+  background-image:
+    radial-gradient(
+      2px 2px at 20px 30px,
+      rgba(255, 255, 255, 0.5),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 40px 70px,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 90px 40px,
+      rgba(255, 255, 255, 0.25),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 130px 80px,
+      rgba(255, 255, 255, 0.35),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 160px 120px,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 200px 60px,
+      rgba(255, 255, 255, 0.25),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 250px 150px,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 300px 40px,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+}
+
+.panel {
+  position: relative;
+  z-index: 2;
+  width: min(860px, 100%);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.45),
+    0 0 60px rgba(123, 92, 255, 0.08);
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+}
+
+h1 {
+  margin: 1.5rem 0;
+  font-size: clamp(1.9rem, 3vw, 3rem);
+  line-height: 1.1;
+}
+
+p {
+  color: var(--text-muted);
+  margin: 0.5rem 0;
+}
+
+.stat {
+  margin: 1.5rem 0 1rem 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--accent-soft);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.grid {
+  margin-top: 1.4rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+.card {
+  border: 1px solid rgba(143, 166, 204, 0.2);
+  border-radius: 12px;
+  padding: 0.9rem;
+  background: var(--card-soft);
+}
+
+.card b {
+  color: var(--text);
+}
+
+code {
+  color: var(--text);
+  background: rgba(143, 166, 204, 0.14);
+  padding: 0.12rem 0.35rem;
+  border-radius: 5px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  border-radius: 50%;
+  margin-right: 1rem;
+  background: var(--danger);
+  box-shadow: 0 0 10px rgba(255, 90, 112, 0.8);
+}

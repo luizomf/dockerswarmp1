@@ -82,6 +82,10 @@ jobs:
           - service: api
             dockerfile: ./docker/Dockerfile.api
             target: production # Multi-stage build com target
+          # Frontend (static nginx)
+          - service: frontend
+            dockerfile: ./docker/Dockerfile.frontend
+            target: ''
           # Nginx
           # - service: nginx
           #   dockerfile: ./Dockerfile.nginx
