@@ -15,6 +15,12 @@ app = FastAPI()
 WEBHOOK_DIR = Path("/app/webhook_jobs")
 
 
+class MissingSecretError(RuntimeError):
+  def __init__(self, name: str) -> None:
+    message = "Missing required secret: {name}".format(name=name)
+    super().__init__(message)
+
+
 def load_secret(name: str) -> str:
   value = os.getenv(name)
   if value:
@@ -26,7 +32,7 @@ def load_secret(name: str) -> str:
     if secret_path.is_file():
       return secret_path.read_text(encoding="utf-8").strip()
 
-  raise RuntimeError(f"Missing required secret: {name}")
+  raise MissingSecretError(name)
 
 
 WEBHOOK_SECRET = load_secret("GITHUB_WEBHOOK_SECRET")
