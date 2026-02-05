@@ -1,5 +1,33 @@
 # dockerswarmp1
 
+## Local Run
+
+Docker Compose (fastest):
+
+```bash
+cp .env.example .env
+docker compose -f docker/compose.yaml --env-file .env up --build
+```
+
+Or with `just`:
+
+```bash
+just upb
+```
+
+The API will be available at:
+
+- `http://localhost:8000/`
+- `http://localhost:8000/health`
+
+Python (no Docker):
+
+```bash
+cp .env.example .env
+uv sync
+GITHUB_WEBHOOK_SECRET=local uv run uvicorn src.dockerswarmp1.main:app --reload --host 0.0.0.0 --port 8000
+```
+
 ## Nodes
 
 | Node | Public IP | WireGuard IP | Domain |

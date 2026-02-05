@@ -17,6 +17,7 @@ All notable changes to this project are documented here. This file records
 - Adjusted Traefik and Postgres update strategy for Swarm host ports
 - Switched Traefik to the Swarm provider and external overlay networks
 - Fixed CI workflow Dockerfile path for API builds
+- Documented local run steps and exposed API port in Compose
 
 ## 2026-02-05
 
