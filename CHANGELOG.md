@@ -10,6 +10,7 @@ All notable changes to this project are documented here. This file records
 - Established CHANGELOG.md as the single source of change history
 - Aligned package metadata with module name and fixed test imports
 - Added Swarm stack definition with Traefik, API, frontend, and Postgres
+- Added Swarm env placeholders for Traefik domains and Postgres credentials
 
 ## 2026-02-05
 

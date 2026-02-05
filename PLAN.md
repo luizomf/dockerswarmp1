@@ -10,7 +10,7 @@ Current Date: 2026-02-05
 
 - [x] Step 1: Analyze current compose/Dockerfiles and list Swarm deltas.
 - [x] Step 2: Define the Swarm stack file (services, networks, volumes, constraints).
-- [ ] Step 3: Add/adjust app envs and secrets needed for Swarm (Traefik, DB, API).
+- [x] Step 3: Add/adjust app envs and secrets needed for Swarm (Traefik, DB, API).
 - [ ] Step 4: Verify local build/run expectations (no nginx, API + DB + frontend).
 - [ ] Step 5: Update CHANGELOG.md (once implementation starts).
 - [ ] Step 6: Clear PLAN.md (remove all completed content when done).
