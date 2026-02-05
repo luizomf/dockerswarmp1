@@ -57,6 +57,14 @@ Label the KVM8 node (for fixed services):
 docker node update --label-add role=kvm8 kvm8
 ```
 
+Create Swarm secrets (run on a manager, e.g. KVM8):
+
+```bash
+. .env
+printf '%s' "$GITHUB_WEBHOOK_SECRET" | docker secret create github_webhook_secret -
+printf '%s' "$POSTGRES_PASSWORD" | docker secret create postgres_password -
+```
+
 ## Webhook Watcher (KVM8)
 
 The webhook endpoint writes job files into `/mnt/nfs/webhook_jobs`. The watcher

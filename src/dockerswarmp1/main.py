@@ -13,7 +13,23 @@ from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
 app = FastAPI()
 
 WEBHOOK_DIR = Path("/app/webhook_jobs")
-WEBHOOK_SECRET = os.environ["GITHUB_WEBHOOK_SECRET"]
+
+
+def load_secret(name: str) -> str:
+  value = os.getenv(name)
+  if value:
+    return value
+
+  file_path = os.getenv(f"{name}_FILE")
+  if file_path:
+    secret_path = Path(file_path)
+    if secret_path.is_file():
+      return secret_path.read_text(encoding="utf-8").strip()
+
+  raise RuntimeError(f"Missing required secret: {name}")
+
+
+WEBHOOK_SECRET = load_secret("GITHUB_WEBHOOK_SECRET")
 
 
 @app.get("/")

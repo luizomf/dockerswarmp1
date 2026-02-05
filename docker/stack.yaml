@@ -48,16 +48,18 @@ services:
     image: ghcr.io/luizomf/dockerswarmp1-api:latest
     environment:
       - CURRENT_ENV=production
-      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - GITHUB_WEBHOOK_SECRET_FILE=/run/secrets/github_webhook_secret
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
     networks:
       - public
       - internal
     volumes:
       - webhook_jobs:/app/webhook_jobs
+    secrets:
+      - github_webhook_secret
+      - postgres_password
     deploy:
       <<: *deploy_defaults
       replicas: 2
@@ -93,11 +95,13 @@ services:
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
     networks:
       - internal
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    secrets:
+      - postgres_password
     deploy:
       <<: *deploy_defaults
       placement:
@@ -124,6 +128,12 @@ volumes:
       type: none
       o: bind
       device: /mnt/nfs/webhook_jobs
+
+secrets:
+  github_webhook_secret:
+    external: true
+  postgres_password:
+    external: true
 
 # Required env vars before deploy:
 # EMAIL, GITHUB_WEBHOOK_SECRET, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD,

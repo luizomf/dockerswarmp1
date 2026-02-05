@@ -22,6 +22,7 @@ All notable changes to this project are documented here. This file records
 - Pointed webhook job storage to NFS-mounted path
 - Added swarm deploy watcher scripts and Just recipes
 - Added nginx-based frontend image for Swarm
+- Switched webhook and database passwords to Swarm secrets
 
 ## 2026-02-05
 
