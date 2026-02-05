@@ -1,6 +1,6 @@
 # vim:sw=2:ts=2:et:set filetype=yaml :
 
-version: "3.9"
+version: '3.9'
 
 x-deploy-defaults: &deploy_defaults
   update_config:
@@ -11,7 +11,7 @@ x-deploy-defaults: &deploy_defaults
 
 services:
   traefik:
-    image: traefik:v3.3
+    image: traefik:v3.6.7
     command:
       - --providers.swarm=true
       - --providers.swarm.exposedbydefault=false
@@ -65,7 +65,8 @@ services:
       replicas: 2
       labels:
         - traefik.enable=true
-        - traefik.http.routers.api.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api`)
+        - traefik.http.routers.api.rule=Host(`${APP_DOMAIN}`) &&
+          PathPrefix(`/api`)
         - traefik.http.routers.api.entrypoints=websecure
         - traefik.http.routers.api.tls=true
         - traefik.http.routers.api.tls.certresolver=le
