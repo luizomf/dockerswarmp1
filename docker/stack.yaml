@@ -13,10 +13,9 @@ services:
   traefik:
     image: traefik:v3.3
     command:
-      - --providers.docker=true
-      - --providers.docker.swarmmode=true
-      - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=public
+      - --providers.swarm=true
+      - --providers.swarm.exposedbydefault=false
+      - --providers.swarm.network=public
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
@@ -110,12 +109,9 @@ services:
 
 networks:
   public:
-    driver: overlay
-    attachable: true
+    external: true
   internal:
-    driver: overlay
-    attachable: true
-    internal: true
+    external: true
 
 volumes:
   traefik_letsencrypt:

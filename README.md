@@ -13,3 +13,18 @@ Notes
 - Only `kvm8` is exposed to the public internet (Traefik edge).
 - `app.myswarm.cloud` is the single public domain for frontend and API.
 - `kvm2` and `kvm4` are locked down by the firewall.
+
+## Swarm Prerequisites
+
+Create the overlay networks before deploying the stack:
+
+```bash
+docker network create --driver=overlay --attachable public
+docker network create --driver=overlay --attachable --internal internal
+```
+
+Label the KVM8 node (for fixed services):
+
+```bash
+docker node update --label-add role=kvm8 kvm8
+```

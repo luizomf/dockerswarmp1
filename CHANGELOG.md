@@ -15,6 +15,7 @@ All notable changes to this project are documented here. This file records
 - Documented node inventory and domain mapping
 - Updated default public domain to use a subdomain
 - Adjusted Traefik and Postgres update strategy for Swarm host ports
+- Switched Traefik to the Swarm provider and external overlay networks
 
 ## 2026-02-05
 
