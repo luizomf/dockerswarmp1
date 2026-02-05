@@ -80,7 +80,7 @@ jobs:
         include:
           # Main App
           - service: api
-            dockerfile: ./Dockerfile.api
+            dockerfile: ./docker/Dockerfile.api
             target: production # Multi-stage build com target
           # Nginx
           # - service: nginx

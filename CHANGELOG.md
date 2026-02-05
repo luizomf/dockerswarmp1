@@ -16,6 +16,7 @@ All notable changes to this project are documented here. This file records
 - Updated default public domain to use a subdomain
 - Adjusted Traefik and Postgres update strategy for Swarm host ports
 - Switched Traefik to the Swarm provider and external overlay networks
+- Fixed CI workflow Dockerfile path for API builds
 
 ## 2026-02-05
 
