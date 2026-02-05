@@ -115,7 +115,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.REGISTRY }}/${{ env.REPO }}-${{ matrix.service }}:{{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO }}-${{ matrix.service }}
           tags: |
             type=raw,value=latest
             type=sha,format=long
