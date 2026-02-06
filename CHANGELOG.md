@@ -36,6 +36,7 @@ All notable changes to this project are documented here. This file records
 - Documented systemd automount options for NFS mounts (boot reliability)
 - Documented scaling guidance and resource limits for the Swarm stack
 - Documented how to measure short-burst request rate safely (RPS vs connections)
+- Added a practical end-to-end video recording outline under docs/
 
 ## 2026-02-05
 
