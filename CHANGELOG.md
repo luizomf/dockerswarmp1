@@ -24,6 +24,7 @@ All notable changes to this project are documented here. This file records
 - Added nginx-based frontend image for Swarm
 - Switched webhook and database passwords to Swarm secrets
 - Updated Postgres volume mount for v18 data layout
+- Forced Traefik to use a modern Docker API version
 
 ## 2026-02-05
 
