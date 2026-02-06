@@ -1,16 +1,14 @@
 # Current Plan
 
-## Task: Add DEV_GUIDE and detailed video script
+## Task: <task name>
 
-Create a separate developer guide (server bootstrap + prerequisites) so the
-main README and the video can stay focused. Also create a detailed recording
-script broken into smaller sections to keep pacing/engagement.
+<task description>
 
 Current Date: 2026-02-06
 
-- [ ] Step 1: Review the old reference guide and current project docs.
-- [ ] Step 2: Add DEV_GUIDE.md tailored to this repo (3 VPS Swarm baseline).
-- [ ] Step 3: Add docs/VIDEO_SCRIPT.md (section-by-section script beats).
+- [ ] Step 1: Analyze requirements.
+- [ ] Step 2: Implement core logic.
+- [ ] Step 3: Verify/Test.
 - [ ] Step 4: Update CHANGELOG.md.
 - [ ] Step 5: Clear PLAN.md (remove all completed content).
 
