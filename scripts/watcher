@@ -24,7 +24,8 @@ log() {
 log "Watcher started. Jobs dir: $WEBHOOKS_JOBS_DIR | Lock: $LOCK_FILE"
 
 while true; do
-  HAS_JOBS=$(ls -A "$WEBHOOKS_JOBS_DIR" 2>/dev/null | head -n 1 || true)
+  # shellcheck disable=SC2012
+  HAS_JOBS="$(ls -A "$WEBHOOKS_JOBS_DIR" 2>/dev/null | head -n 1 || true)"
 
   if [[ -z "$HAS_JOBS" ]]; then
     sleep "$INTERVAL"
