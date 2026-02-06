@@ -34,6 +34,7 @@ All notable changes to this project are documented here. This file records
 - Documented NFS permissions and post-reboot checklist in README
 - Removed PDF manuals from the repository
 - Documented systemd automount options for NFS mounts (boot reliability)
+- Documented scaling guidance and resource limits for the Swarm stack
 
 ## 2026-02-05
 

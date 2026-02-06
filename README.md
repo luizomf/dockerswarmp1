@@ -251,6 +251,67 @@ just watcher-logs
 - `https://<APP_DOMAIN>/api/visit`
 - `https://<APP_DOMAIN>/api/webhook/github`
 
+## Escalabilidade (replicas e gargalos)
+
+O que faz sentido escalar nesse cluster (3 VPS, sem storage distribuído) são os
+serviços stateless:
+
+- `frontend` (Nginx estático)
+- `api` (FastAPI)
+
+O que normalmente fica fixo em 1 replica:
+
+- `traefik`: fica preso ao `kvm8` por usar `mode: host` nas portas `80/443`.
+- `postgres`: é stateful e está fixo no `kvm8` (gargalo e SPOF do setup).
+
+Sugestão "folgado" (produção simples):
+
+- `api=2` (HA básico)
+- `frontend=1`
+
+Sugestão para "pressionar" e demonstrar balanceamento:
+
+- `api=3` (1 por nó)
+- `frontend=2`
+
+Como escalar rapidamente:
+
+```bash
+docker service scale dockerswarmp1_api=3 dockerswarmp1_frontend=2
+```
+
+Ou altere `deploy.replicas` no `docker/stack.yaml` e rode:
+
+```bash
+just stack-deploy
+```
+
+Nota importante: ao aumentar `api`, você aumenta concorrência e conexões no
+Postgres. A API usa pool de conexões; para VPS pequenas, é melhor escalar com
+moderação e observar CPU/IO do `kvm8`.
+
+## Limites e reservas (Swarm)
+
+Para evitar que `api/frontend` "esmaguem" o `postgres` no `kvm8`, use limites e
+reservas em `deploy.resources` (ajuste para a RAM/CPU reais das VPS):
+
+```yaml
+deploy:
+  resources:
+    reservations:
+      cpus: "0.10"
+      memory: 128M
+    limits:
+      cpus: "0.50"
+      memory: 512M
+```
+
+Recomendação prática:
+
+- `frontend`: `memory` baixo (ex: 64-128M) e `cpus` baixo.
+- `api`: limite moderado (ex: 256-512M) para permitir burst sem derrubar o nó.
+- `postgres`: deixe mais folga no `kvm8` e monitore IO (disco costuma doer antes).
+
 ## Comandos úteis
 
 ```bash
