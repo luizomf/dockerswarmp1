@@ -145,6 +145,40 @@ O path usado pelo webhook é:
 /mnt/nfs/webhook_jobs
 ```
 
+## Permissões do NFS (evitar permission denied)
+
+O container da API escreve com UID/GID `1011` e o watcher roda como
+`luizotavio`. Se o diretório do NFS não estiver alinhado com esse grupo, o
+watcher não consegue apagar os arquivos do webhook.
+
+Modo recomendado (produção simples):
+
+```bash
+sudo groupadd -g 1011 app || true
+sudo usermod -aG app luizotavio
+```
+
+No `kvm8` (servidor NFS):
+
+```bash
+sudo chown -R root:app /srv/nfs/swarm_data/webhook_jobs
+sudo chmod 2770 /srv/nfs/swarm_data/webhook_jobs
+sudo setfacl -R -m g:app:rwx /srv/nfs/swarm_data/webhook_jobs
+sudo setfacl -R -m d:g:app:rwx /srv/nfs/swarm_data/webhook_jobs
+```
+
+Depois reinicie o watcher ou relogue no usuário:
+
+```bash
+sudo systemctl restart webhook-watcher
+```
+
+Modo demo (rápido, menos seguro):
+
+```bash
+sudo chmod 0777 /srv/nfs/swarm_data/webhook_jobs
+```
+
 ## Swarm bootstrap
 
 No `kvm8`:
@@ -220,6 +254,16 @@ just stack-services
 just stack-ps
 just stack-logs api
 just stack-logs traefik
+```
+
+## Checklist pós-reboot
+
+```bash
+docker node ls
+docker network ls | grep -E 'public|internal'
+mount | grep /mnt/nfs
+systemctl status webhook-watcher
+docker stack services dockerswarmp1
 ```
 
 ## Problemas comuns

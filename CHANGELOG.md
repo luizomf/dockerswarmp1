@@ -31,6 +31,7 @@ All notable changes to this project are documented here. This file records
 - Updated frontend landing page copy for the Swarm project
 - Added /api prefix alias for the GitHub webhook endpoint
 - Expanded README with full Swarm setup and troubleshooting guide
+- Documented NFS permissions and post-reboot checklist in README
 
 ## 2026-02-05
 
