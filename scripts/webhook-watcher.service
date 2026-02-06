@@ -12,6 +12,7 @@ RestartSec=3
 User=luizotavio
 Group=luizotavio
 Environment=WEBHOOKS_JOBS_DIR=/mnt/nfs/webhook_jobs
+Environment=DEPLOY_COMMAND="just stack-deploy"
 
 [Install]
 WantedBy=multi-user.target
