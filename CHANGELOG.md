@@ -27,6 +27,7 @@ All notable changes to this project are documented here. This file records
 - Forced Traefik to use a modern Docker API version
 - Added visit counter endpoint backed by Postgres
 - Fixed Traefik API routing to keep /api prefix
+- Fixed Postgres DSN building for passwords with spaces
 
 ## 2026-02-05
 

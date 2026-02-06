@@ -10,6 +10,7 @@ from typing import Annotated, Any
 
 import uvloop
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
+from psycopg.conninfo import make_conninfo
 from psycopg_pool import ConnectionPool
 
 app = FastAPI()
@@ -53,7 +54,13 @@ def get_database_dsn() -> str | None:
   password = load_secret("POSTGRES_PASSWORD")
   host = os.getenv("POSTGRES_HOST", "postgres")
   port = os.getenv("POSTGRES_PORT", "5432")
-  return f"postgresql://{user}:{password}@{host}:{port}/{database}"
+  return make_conninfo(
+    dbname=database,
+    user=user,
+    password=password,
+    host=host,
+    port=port,
+  )
 
 
 def init_db(pool: ConnectionPool[Any]) -> None:
