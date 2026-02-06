@@ -1,17 +1,14 @@
 # Current Plan
 
-## Task: Create video outline (start to finish)
+## Task: <task name>
 
-Create a practical, honest video recording outline that walks from zero to a
-working 3-VPS Docker Swarm baseline, including tradeoffs (SPOFs) and a clear
-"how to evolve" section. This should be a recording checklist + script beats,
-not new infrastructure work.
+<task description>
 
 Current Date: 2026-02-06
 
-- [ ] Step 1: Draft the outline content and section timing.
-- [ ] Step 2: Add a persistent doc under docs/ with the outline.
-- [ ] Step 3: Ensure commands/paths match the current repo (Justfile/stack).
+- [ ] Step 1: Analyze requirements.
+- [ ] Step 2: Implement core logic.
+- [ ] Step 3: Verify/Test.
 - [ ] Step 4: Update CHANGELOG.md.
 - [ ] Step 5: Clear PLAN.md (remove all completed content).
 
