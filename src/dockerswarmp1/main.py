@@ -6,7 +6,7 @@ import socket
 import time
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import uvloop
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
@@ -56,7 +56,7 @@ def get_database_dsn() -> str | None:
   return f"postgresql://{user}:{password}@{host}:{port}/{database}"
 
 
-def init_db(pool: ConnectionPool) -> None:
+def init_db(pool: ConnectionPool[Any]) -> None:
   with pool.connection() as conn:
     conn.execute(
       """
@@ -70,19 +70,19 @@ def init_db(pool: ConnectionPool) -> None:
     )
 
 
-def get_pool() -> ConnectionPool:
-  pool = getattr(app.state, "pool", None)
-  if pool is not None:
-    return pool
+def get_pool() -> ConnectionPool[Any]:
+  existing_pool: ConnectionPool[Any] | None = getattr(app.state, "pool", None)
+  if existing_pool is not None:
+    return existing_pool
 
   dsn = get_database_dsn()
   if not dsn:
     raise HTTPException(status_code=503, detail="Database not configured")
 
-  pool = ConnectionPool(conninfo=dsn, min_size=1, max_size=5)
-  init_db(pool)
-  app.state.pool = pool
-  return pool
+  new_pool: ConnectionPool[Any] = ConnectionPool(conninfo=dsn, min_size=1, max_size=5)
+  init_db(new_pool)
+  app.state.pool = new_pool
+  return new_pool
 
 
 def get_client_ip(request: Request) -> str:
@@ -104,7 +104,7 @@ def build_visit_hash(request: Request, visit_date: date) -> str:
   return hashlib.sha256(raw.encode()).hexdigest()
 
 
-def record_visit(pool: ConnectionPool, visit_date: date, visitor_hash: str) -> int:
+def record_visit(pool: ConnectionPool[Any], visit_date: date, visitor_hash: str) -> int:
   with pool.connection() as conn:
     conn.execute(
       """
@@ -118,7 +118,10 @@ def record_visit(pool: ConnectionPool, visit_date: date, visitor_hash: str) -> i
       "SELECT COUNT(*) FROM visit_events WHERE visit_date = %s",
       (visit_date,),
     )
-    return int(cursor.fetchone()[0])
+    result = cursor.fetchone()
+    if result is None:
+      return 0
+    return int(result[0])
 
 
 @app.get("/")
