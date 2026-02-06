@@ -132,8 +132,12 @@ sudo mkdir -p /mnt/nfs
 `/etc/fstab`:
 
 ```
-10.100.0.8:/ /mnt/nfs nfs4 rw,vers=4.2,_netdev,noatime 0 0
+10.100.0.8:/ /mnt/nfs nfs4 rw,vers=4.2,_netdev,noatime,nofail,x-systemd.automount,x-systemd.idle-timeout=600,x-systemd.device-timeout=10s,x-systemd.mount-timeout=30s,x-systemd.requires=wg-quick@wg0.service 0 0
 ```
+
+As opções `x-systemd.automount` e `x-systemd.requires=wg-quick@wg0.service`
+ajudam a evitar timeouts no boot quando o `kvm8` reinicia junto ou o WireGuard
+(`wg0`) ainda não está pronto.
 
 ```bash
 sudo mount -a

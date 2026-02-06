@@ -33,6 +33,7 @@ All notable changes to this project are documented here. This file records
 - Expanded README with full Swarm setup and troubleshooting guide
 - Documented NFS permissions and post-reboot checklist in README
 - Removed PDF manuals from the repository
+- Documented systemd automount options for NFS mounts (boot reliability)
 
 ## 2026-02-05
 
