@@ -4,16 +4,32 @@ import hmac
 import os
 import socket
 import time
+from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 import uvloop
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
 from psycopg.conninfo import make_conninfo
 from psycopg_pool import ConnectionPool
 
-app = FastAPI()
+if TYPE_CHECKING:
+  from collections.abc import AsyncIterator
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+  try:
+    yield
+  finally:
+    pool: ConnectionPool[Any] | None = getattr(app.state, "pool", None)
+    if pool is not None:
+      await asyncio.to_thread(pool.close)
+      app.state.pool = None
+
+
+app = FastAPI(lifespan=lifespan)
 
 WEBHOOK_DIR = Path("/app/webhook_jobs")
 
