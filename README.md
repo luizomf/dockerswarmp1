@@ -312,6 +312,47 @@ Recomendação prática:
 - `api`: limite moderado (ex: 256-512M) para permitir burst sem derrubar o nó.
 - `postgres`: deixe mais folga no `kvm8` e monitore IO (disco costuma doer antes).
 
+## Medir carga (requests/s vs connections/s)
+
+Em load tests com keep-alive/HTTP2, é normal ver milhares de requests/s com
+apenas poucas conexões TCP ativas. Por isso:
+
+- `connections/s` (TCP) nao reflete `requests/s` (HTTP) diretamente.
+- Para medir `requests/s`, você precisa de access logs ou métricas HTTP.
+
+Se você quiser algo mais "clean" e permanente, o próximo passo é expor métricas
+do Traefik (Prometheus) em um endpoint protegido (ex: allowlist por IP) e criar
+um dashboard. Para o vídeo, access log por poucos segundos costuma ser suficiente.
+
+### Medir requests/s (rápido, para poucos segundos)
+
+A forma mais simples é habilitar access log do Traefik e contar linhas.
+Atenção: em `9000 req/s`, isso gera muito log e pode degradar a VPS. Use apenas
+em janelas curtas e desative depois.
+
+No `docker/stack.yaml` (serviço `traefik`), adicione:
+
+```yaml
+command:
+  - --accesslog=true
+  - --accesslog.format=common
+```
+
+Faça o deploy e meça por 10s:
+
+```bash
+just stack-deploy
+docker service logs --since 10s dockerswarmp1_traefik 2>/dev/null | wc -l
+```
+
+### Medir connections/s (kernel)
+
+Útil para ver churn de conexões TCP (SYNs), mas nao serve como RPS:
+
+```bash
+sudo timeout 10 tcpdump -n -l \"tcp[tcpflags] & (tcp-syn|tcp-ack) == tcp-syn and dst port 443\" 2>/dev/null | wc -l
+```
+
 ## Comandos úteis
 
 ```bash

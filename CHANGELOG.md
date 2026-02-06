@@ -35,6 +35,7 @@ All notable changes to this project are documented here. This file records
 - Removed PDF manuals from the repository
 - Documented systemd automount options for NFS mounts (boot reliability)
 - Documented scaling guidance and resource limits for the Swarm stack
+- Documented how to measure short-burst request rate safely (RPS vs connections)
 
 ## 2026-02-05
 
