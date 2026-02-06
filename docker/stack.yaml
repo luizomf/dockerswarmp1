@@ -100,7 +100,7 @@ services:
     networks:
       - internal
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     secrets:
       - postgres_password
     deploy:
