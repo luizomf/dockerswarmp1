@@ -11,15 +11,15 @@
     <div class="stars"></div>
 
     <main class="panel">
-      <span class="tag">Infinite Datacenter</span>
-      <h1>Brien Galaxy Lab</h1>
+      <span class="tag">Swarm em producao</span>
+      <h1>Docker Swarm em 3 VPS</h1>
       <p>
-        <span class="dot"></span>Demo em producao com visual galaxia, servido
-        por <code>nginx</code> no Swarm.
+        <span class="dot"></span>Cluster real com KVM2, KVM4 e KVM8,
+        distribuindo a API e o frontend.
       </p>
       <p>
-        Traefik recebe no <code>443</code> e entrega no servico interno
-        <code>8080</code>.
+        Traefik recebe no <code>443</code> e roteia para a API em
+        <code>/api</code> e para o frontend no <code>8080</code>.
       </p>
       <div class="stat">
         <span class="stat-label">Unicos hoje</span>
@@ -27,13 +27,13 @@
       </div>
       <section class="grid">
         <article class="card">
-          <b>Stack</b><br />Docker Swarm + Traefik v3 + NFS
+          <b>Stack</b><br />Swarm + Traefik + FastAPI + Postgres + NFS
         </article>
         <article class="card">
-          <b>Deploy</b><br /><code>just deploy-traefik</code>
+          <b>Deploy</b><br /><code>just stack-deploy</code>
         </article>
         <article class="card">
-          <b>Watch</b><br /><code>just deploy-traefik-watch</code>
+          <b>Auto deploy</b><br />GitHub Actions + webhook
         </article>
       </section>
     </main>

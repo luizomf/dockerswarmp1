@@ -1,20 +1,17 @@
 # Current Plan
 
-## Task: Migrate project to Docker Swarm (first deployable stack)
+## Task: Update frontend copy to match the Swarm project
 
-Create the first Swarm-ready stack for the project (Traefik + FastAPI + PostgreSQL 18
-+ frontend), replacing the old compose/nginx flow. Ensure placement constraints for
-fixed services on KVM8, and prepare env/secrets for GHCR pull-based deploys.
+Replace the placeholder content in the frontend landing page so it reflects the
+real Docker Swarm stack and commands used in this project.
 
-Current Date: 2026-02-05
+Current Date: 2026-02-06
 
-- [x] Step 1: Analyze current compose/Dockerfiles and list Swarm deltas.
-- [x] Step 2: Define the Swarm stack file (services, networks, volumes, constraints).
-- [x] Step 3: Add/adjust app envs and secrets needed for Swarm (Traefik, DB, API).
-- [x] Step 4: Implement API visit counter with Postgres support.
-- [x] Step 5: Verify tests pass (local).
-- [x] Step 6: Update CHANGELOG.md (once implementation starts).
-- [ ] Step 7: Clear PLAN.md (remove all completed content when done).
+- [x] Step 1: Review current frontend copy and decide the new messaging.
+- [x] Step 2: Update the HTML content to match the Swarm stack and commands.
+- [ ] Step 3: Verify the page renders after rebuild/deploy.
+- [x] Step 4: Update CHANGELOG.md.
+- [ ] Step 5: Clear PLAN.md (remove all completed content).
 
 _(Note: Once all items are checked `[x]`, this file should be cleared for the
 next task)_
