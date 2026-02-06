@@ -39,6 +39,7 @@ All notable changes to this project are documented here. This file records
 - Added a practical end-to-end video recording outline under docs/
 - Added DEV_GUIDE.md and a detailed video script to keep README/video focused
 - Refined the video hook to delay tradeoffs and added Mermaid diagrams (runtime + deploy)
+- Reworked the first 60 seconds into high-tempo beats and added Traefik pronunciation note
 
 ## 2026-02-05
 

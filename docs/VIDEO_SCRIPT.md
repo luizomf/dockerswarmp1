@@ -20,31 +20,47 @@ No video eu vou focar no Swarm + deploy + tradeoffs."
 
 ## 1) 0:00-2:00 Contexto e objetivo
 
-HOOK (primeiros 30-60s)
+HOOK (0:00-1:00, alto ritmo)
+
+0:00-0:08
 
 SHOW:
 
-- Browser: `https://app.myswarm.cloud/`
-- Browser: `https://app.myswarm.cloud/api/visit`
-- terminal (rapido): `docker node ls`
+- Browser: `https://app.myswarm.cloud/` (cadeado do HTTPS)
+
+ON SCREEN TEXT:
+
+- `3 VPS`
+- `HTTPS`
+- `Deploy automatico`
 
 SAY:
 
-"Em 30-45 minutos voce vai sair com um baseline de producao em 3 VPS:
-Docker Swarm, TLS com Traefik, deploy automatico e um app real."
+"Vou te mostrar um baseline de producao em 3 VPS com deploy automatico e HTTPS."
 
-PROMESSA (sem negativos no 1o minuto)
-
-SAY:
-
-"Se voce ja domina Docker Compose e quer dar o proximo passo, isso aqui e uma
-base que voce consegue copiar e ir evoluindo. Sem precisar de um time enorme."
-
-DIAGRAMA (on screen, 10-15s)
+0:08-0:18
 
 SHOW:
 
-- diagrama runtime (mermaid) abaixo
+- Browser: `https://app.myswarm.cloud/api/visit` (json)
+
+ON SCREEN TEXT:
+
+- `API + Postgres`
+
+SAY:
+
+"API de verdade com banco, sem truque."
+
+0:18-0:32
+
+SHOW:
+
+- diagrama runtime (mermaid)
+
+ON SCREEN TEXT:
+
+- `gateway HTTPS -> frontend + API -> DB`
 
 ```mermaid
 flowchart LR
@@ -54,11 +70,52 @@ flowchart LR
   API --> DB["Postgres"]
 ```
 
+SAY:
+
+"Um gateway na borda, frontend e API stateless, e o banco por tras."
+
+0:32-0:48
+
+SHOW:
+
+- GitHub Actions (workflow rodando)
+- GHCR packages (imagem nova)
+
+ON SCREEN TEXT:
+
+- `push -> build -> registry -> deploy`
+
+SAY:
+
+"Push no main builda a imagem e o cluster so faz pull e atualiza."
+
+0:48-1:00
+
+SHOW:
+
+- terminal (b-roll): `docker node ls`
+- terminal (b-roll): `docker stack services dockerswarmp1`
+
+SAY:
+
+"Se voce ja domina Docker Compose, isso aqui e o proximo passo, copiavel e evolutivo."
+
+PROMESSA (1:00-2:00, ainda leve)
+
+SAY:
+
+"A ideia e te entregar uma base simples que funciona hoje e te deixa crescer depois,
+sem precisar de um time enorme desde o dia 1."
+
 NEXT:
 
 "Agora deixa eu te mostrar o desenho antes de entrar em comando."
 
 ## 2) 2:00-8:00 Visao da arquitetura
+
+PRESENTER NOTE:
+
+- Traefik se pronuncia como a palavra inglesa `traffic` (tipo "trafik").
 
 SHOW:
 
