@@ -29,6 +29,7 @@ All notable changes to this project are documented here. This file records
 - Fixed Traefik API routing to keep /api prefix
 - Fixed Postgres DSN building for passwords with spaces
 - Updated frontend landing page copy for the Swarm project
+- Added /api prefix alias for the GitHub webhook endpoint
 
 ## 2026-02-05
 

@@ -194,6 +194,7 @@ def run_deploy() -> None:
 
 
 @app.post("/webhook/github")
+@app.post("/api/webhook/github")
 async def github_webhook(
   request: Request,
   background: BackgroundTasks,
