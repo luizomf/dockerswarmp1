@@ -38,6 +38,7 @@ All notable changes to this project are documented here. This file records
 - Documented how to measure short-burst request rate safely (RPS vs connections)
 - Added a practical end-to-end video recording outline under docs/
 - Added DEV_GUIDE.md and a detailed video script to keep README/video focused
+- Refined the video hook to delay tradeoffs and added Mermaid diagrams (runtime + deploy)
 
 ## 2026-02-05
 

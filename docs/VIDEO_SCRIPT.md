@@ -20,24 +20,39 @@ No video eu vou focar no Swarm + deploy + tradeoffs."
 
 ## 1) 0:00-2:00 Contexto e objetivo
 
-HOOK
+HOOK (primeiros 30-60s)
 
 SHOW:
 
 - Browser: `https://app.myswarm.cloud/`
 - Browser: `https://app.myswarm.cloud/api/visit`
+- terminal (rapido): `docker node ls`
 
 SAY:
 
 "Em 30-45 minutos voce vai sair com um baseline de producao em 3 VPS:
 Docker Swarm, TLS com Traefik, deploy automatico e um app real."
 
-PROMESSA + LIMITES
+PROMESSA (sem negativos no 1o minuto)
 
 SAY:
 
-"Nao e Netflix. Com 3 VPS, a gente aceita alguns SPOFs para manter simples.
-Mas a base e escalavel e tem caminho de evolucao."
+"Se voce ja domina Docker Compose e quer dar o proximo passo, isso aqui e uma
+base que voce consegue copiar e ir evoluindo. Sem precisar de um time enorme."
+
+DIAGRAMA (on screen, 10-15s)
+
+SHOW:
+
+- diagrama runtime (mermaid) abaixo
+
+```mermaid
+flowchart LR
+  U["User"] -->|"HTTPS"| T["Traefik (kvm8)"]
+  T --> FE["Frontend"]
+  T --> API["API"]
+  API --> DB["Postgres"]
+```
 
 NEXT:
 
@@ -48,6 +63,7 @@ NEXT:
 SHOW:
 
 - diagrama (mermaid) do `docs/VIDEO_OUTLINE.md`
+- diagrama deploy (mermaid) abaixo
 
 SAY (simples, em 60s):
 
@@ -56,12 +72,26 @@ SAY (simples, em 60s):
 - "API conversa com Postgres."
 - "Deploy vem do GitHub Actions (GHCR) e um webhook aciona o Swarm."
 
-CALL-OUT (tradeoffs)
+```mermaid
+flowchart LR
+  Dev["Push to main"] --> GA["GitHub Actions\n(test + build)"]
+  GA --> GHCR["GHCR images"]
+  GA --> WH["Webhook (HMAC)"]
+  WH --> API["API queues a job"]
+  API --> NFS["NFS webhook_jobs"]
+  NFS --> W["Watcher (kvm8)\nstack deploy"]
+  W --> SW["Swarm updates\nservices"]
+```
+
+CALL-OUT (decisoes do baseline)
 
 SAY:
 
-"SPOFs: Traefik (edge), Postgres, NFS (fila do webhook). Tudo intencional para
-um baseline pequeno. O que escala aqui sao os stateless: API e frontend."
+"O ponto aqui e simplificar: o cluster so faz pull e atualiza servicos. A gente
+escala o que e stateless (API e frontend) e deixa stateful fixo por enquanto."
+
+"As limitacoes e tradeoffs (Traefik/DB/storage) eu explico mais adiante, quando
+a gente ja tiver o baseline rodando."
 
 NEXT:
 
@@ -202,4 +232,3 @@ FINAL:
 
 "Se voce curtiu, no proximo video a gente pega 1 dessas pecas e evolui sem
 reconstruir tudo do zero."
-
