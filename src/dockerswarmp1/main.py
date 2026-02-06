@@ -4,11 +4,13 @@ import hmac
 import os
 import socket
 import time
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Annotated
 
 import uvloop
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
+from psycopg_pool import ConnectionPool
 
 app = FastAPI()
 
@@ -17,7 +19,7 @@ WEBHOOK_DIR = Path("/app/webhook_jobs")
 
 class MissingSecretError(RuntimeError):
   def __init__(self, name: str) -> None:
-    message = "Missing required secret: {name}".format(name=name)
+    message = f"Missing required secret: {name}"
     super().__init__(message)
 
 
@@ -38,6 +40,87 @@ def load_secret(name: str) -> str:
 WEBHOOK_SECRET = load_secret("GITHUB_WEBHOOK_SECRET")
 
 
+def get_database_dsn() -> str | None:
+  url = os.getenv("DATABASE_URL")
+  if url:
+    return url
+
+  database = os.getenv("POSTGRES_DB")
+  user = os.getenv("POSTGRES_USER")
+  if not database or not user:
+    return None
+
+  password = load_secret("POSTGRES_PASSWORD")
+  host = os.getenv("POSTGRES_HOST", "postgres")
+  port = os.getenv("POSTGRES_PORT", "5432")
+  return f"postgresql://{user}:{password}@{host}:{port}/{database}"
+
+
+def init_db(pool: ConnectionPool) -> None:
+  with pool.connection() as conn:
+    conn.execute(
+      """
+      CREATE TABLE IF NOT EXISTS visit_events (
+        visit_date date NOT NULL,
+        visitor_hash text NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        PRIMARY KEY (visit_date, visitor_hash)
+      )
+      """
+    )
+
+
+def get_pool() -> ConnectionPool:
+  pool = getattr(app.state, "pool", None)
+  if pool is not None:
+    return pool
+
+  dsn = get_database_dsn()
+  if not dsn:
+    raise HTTPException(status_code=503, detail="Database not configured")
+
+  pool = ConnectionPool(conninfo=dsn, min_size=1, max_size=5)
+  init_db(pool)
+  app.state.pool = pool
+  return pool
+
+
+def get_client_ip(request: Request) -> str:
+  forwarded = request.headers.get("x-forwarded-for")
+  if forwarded:
+    return forwarded.split(",")[0].strip()
+
+  if request.client:
+    return request.client.host
+
+  return "unknown"
+
+
+def build_visit_hash(request: Request, visit_date: date) -> str:
+  user_agent = request.headers.get("user-agent", "unknown")
+  client_ip = get_client_ip(request)
+  visit_salt = os.getenv("VISIT_SALT") or WEBHOOK_SECRET
+  raw = f"{visit_date.isoformat()}|{client_ip}|{user_agent}|{visit_salt}"
+  return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def record_visit(pool: ConnectionPool, visit_date: date, visitor_hash: str) -> int:
+  with pool.connection() as conn:
+    conn.execute(
+      """
+      INSERT INTO visit_events (visit_date, visitor_hash)
+      VALUES (%s, %s)
+      ON CONFLICT DO NOTHING
+      """,
+      (visit_date, visitor_hash),
+    )
+    cursor = conn.execute(
+      "SELECT COUNT(*) FROM visit_events WHERE visit_date = %s",
+      (visit_date,),
+    )
+    return int(cursor.fetchone()[0])
+
+
 @app.get("/")
 async def root() -> str:
   loop = asyncio.get_event_loop()
@@ -51,6 +134,15 @@ async def root() -> str:
 @app.get("/health")
 async def health_check() -> dict[str, str]:
   return {"status": "healthy"}
+
+
+@app.get("/api/visit")
+async def visit_counter(request: Request) -> dict[str, int | str]:
+  visit_date = datetime.now(tz=UTC).date()
+  visitor_hash = build_visit_hash(request, visit_date)
+  pool = await asyncio.to_thread(get_pool)
+  unique_visits = await asyncio.to_thread(record_visit, pool, visit_date, visitor_hash)
+  return {"date": visit_date.isoformat(), "unique_visits": unique_visits}
 
 
 def verify_signature(body: bytes, signature_256: str | None) -> None:

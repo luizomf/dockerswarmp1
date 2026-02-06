@@ -25,6 +25,7 @@ All notable changes to this project are documented here. This file records
 - Switched webhook and database passwords to Swarm secrets
 - Updated Postgres volume mount for v18 data layout
 - Forced Traefik to use a modern Docker API version
+- Added visit counter endpoint backed by Postgres
 
 ## 2026-02-05
 

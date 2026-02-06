@@ -19,6 +19,7 @@ The API will be available at:
 
 - `http://localhost:8000/`
 - `http://localhost:8000/health`
+- `http://localhost:8000/api/visit` (returns 503 without Postgres)
 
 Python (no Docker):
 
@@ -63,6 +64,12 @@ Create Swarm secrets (run on a manager, e.g. KVM8):
 . .env
 printf '%s' "$GITHUB_WEBHOOK_SECRET" | docker secret create github_webhook_secret -
 printf '%s' "$POSTGRES_PASSWORD" | docker secret create postgres_password -
+```
+
+Optional visitor hash salt (falls back to `GITHUB_WEBHOOK_SECRET` if missing):
+
+```
+VISIT_SALT="CHANGE_ME_OPTIONAL"
 ```
 
 ## Webhook Watcher (KVM8)

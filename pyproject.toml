@@ -9,6 +9,7 @@ authors = [{ name = "Luiz Otávio Miranda" }]
 
 dependencies = [
   "fastapi>=0.124.4",
+  "psycopg[binary,pool]>=3.3.2",
   "uvicorn[standard]>=0.38.0",
   "uvloop>=0.22.1",
 ]

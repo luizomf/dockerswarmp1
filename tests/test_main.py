@@ -15,3 +15,9 @@ def test_health_check(client: TestClient):
   response = client.get("/health")
   assert response.status_code == 200  # noqa: PLR2004
   assert response.json() == {"status": "healthy"}
+
+
+def test_visit_counter_requires_db(client: TestClient):
+  response = client.get("/api/visit")
+  assert response.status_code == 503  # noqa: PLR2004
+  assert response.json() == {"detail": "Database not configured"}
