@@ -64,10 +64,11 @@ services:
       - postgres_password
     deploy:
       <<: *deploy_defaults
-      replicas: 2
+      replicas: 6
       labels:
         - traefik.enable=true
-        - traefik.http.routers.api.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api`)
+        - traefik.http.routers.api.rule=Host(`${APP_DOMAIN}`) &&
+          PathPrefix(`/api`)
         - traefik.http.routers.api.entrypoints=websecure
         - traefik.http.routers.api.tls=true
         - traefik.http.routers.api.tls.certresolver=le
@@ -80,7 +81,7 @@ services:
       - public
     deploy:
       <<: *deploy_defaults
-      replicas: 1
+      replicas: 6
       labels:
         - traefik.enable=true
         - traefik.http.routers.frontend.rule=Host(`${APP_DOMAIN}`)
