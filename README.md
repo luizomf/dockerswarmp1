@@ -5,6 +5,12 @@ Traefik como edge, API em FastAPI, frontend estático via Nginx e PostgreSQL 18.
 As imagens são buildadas no GitHub Actions e publicadas no GHCR, e o deploy é
 feito via webhook.
 
+## Docs importantes
+
+- `DEV_GUIDE.md`: bootstrap e hardening basico das VPS (SSH/UFW/fail2ban/WireGuard/NFS).
+- `docs/VIDEO_OUTLINE.md`: outline do video.
+- `docs/VIDEO_SCRIPT.md`: roteiro detalhado (SHOW/SAY/CMD).
+
 ## Visão geral
 
 - 3 nós Swarm (todos managers): kvm2, kvm4, kvm8.

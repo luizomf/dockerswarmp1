@@ -4,6 +4,12 @@ Este roteiro e' intencionalmente honesto: e' uma base pequena, simples e
 replicavel. Nao e' Netflix, mas e' um ponto de partida que um dev consegue
 subir, entender, manter e ir evoluindo.
 
+Docs relacionados:
+
+- `DEV_GUIDE.md`: bootstrap completo (SSH/UFW/fail2ban/WireGuard/NFS). Fica fora
+  do video para nao virar curso infinito.
+- `docs/VIDEO_SCRIPT.md`: versao detalhada (SHOW/SAY/CMD/CUT) para gravacao.
+
 ## Objetivo Do Video
 
 - Subir um cluster Docker Swarm em 3 VPS.
