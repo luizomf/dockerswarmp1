@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Brien Galaxy Lab</title>
+    <title>My Docker Swarm</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
@@ -11,23 +11,23 @@
     <div class="stars"></div>
 
     <main class="panel">
-      <span class="tag">Swarm em producao</span>
+      <span class="tag">Swarm em produção</span>
       <h1>Docker Swarm em 3 VPS</h1>
       <p>
         <span class="dot"></span>Cluster real com KVM2, KVM4 e KVM8,
         distribuindo a API e o frontend.
       </p>
       <p>
-        Traefik recebe no <code>443</code> e roteia para a API em
+        Traefik recebe no <code>:443</code> e roteia para a API em
         <code>/api</code> e para o frontend no <code>8080</code>.
       </p>
       <div class="stat">
-        <span class="stat-label">Unicos hoje</span>
+        <span class="stat-label">Visitas Hoje</span>
         <span class="stat-value" id="visit-count">...</span>
       </div>
       <section class="grid">
         <article class="card">
-          <b>Stack</b><br />Swarm + Traefik + FastAPI + Postgres + NFS
+          <b>Stack</b><br />Swarm + Traefik + FastAPI + Postgres + Nginx
         </article>
         <article class="card">
           <b>Deploy</b><br /><code>just stack-deploy</code>
@@ -39,8 +39,8 @@
     </main>
     <script>
       fetch('/api/visit')
-        .then((res) => res.json())
-        .then((data) => {
+        .then(res => res.json())
+        .then(data => {
           const el = document.getElementById('visit-count');
           if (el && data && typeof data.unique_visits === 'number') {
             el.textContent = data.unique_visits.toString();
