@@ -26,6 +26,7 @@ All notable changes to this project are documented here. This file records
 - Updated Postgres volume mount for v18 data layout
 - Forced Traefik to use a modern Docker API version
 - Added visit counter endpoint backed by Postgres
+- Fixed Traefik API routing to keep /api prefix
 
 ## 2026-02-05
 
