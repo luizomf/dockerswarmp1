@@ -493,6 +493,110 @@ Pressione `Ctrl+C` no terminal e remova a pasta de teste:
 rm -r test
 ```
 
+## 13. WireGuard (VPN Privada)
+
+Essa é a parte mais trabalhosa, mas essencial. Vamos criar uma rede privada (`10.100.0.0/24`) onde os nós conversarão de forma segura e criptografada, sem expor o Swarm na internet pública.
+
+**Execute em cada VPS, AJUSTANDO a variável `WG_IP` para cada uma:**
+
+```bash
+# === PASSO 1: Instalação e Geração de Chaves ===
+
+# Instala o WireGuard
+sudo apt install -y wireguard
+
+# Defina a interface e o IP DESTA MÁQUINA (Ajuste para cada VPS!)
+export WG_INTERFACE="wg0"
+export WG_CIDR="24"
+# kvm2=10.100.0.2 | kvm4=10.100.0.4 | kvm8=10.100.0.8
+export WG_IP="10.100.0.2" # <--- 🚨 TROQUE ISSO EM CADA MÁQUINA
+
+# Configura caminhos
+export WG_DIR="/etc/wireguard"
+export WG_CONF="$WG_DIR/$WG_INTERFACE.conf"
+export WG_PRI="${WG_DIR}/private.key"
+export WG_PUB="${WG_DIR}/public.key"
+
+# Gera chaves e arquivo de config se não existirem
+if ! sudo test -f "${WG_PRI}"; then
+    echo "Gerando chaves..."
+    sudo install -d -m 0700 -o root -g root "${WG_DIR}"
+    sudo wg genkey | sudo tee "${WG_PRI}" | sudo wg pubkey | sudo tee "${WG_PUB}" > /dev/null
+    sudo chmod 600 "${WG_PRI}"
+    sudo chmod 644 "${WG_PUB}"
+fi
+
+# Lê as chaves para variáveis
+WG_PRI_VALUE=$(sudo cat "${WG_PRI}")
+WG_PUB_VALUE=$(sudo cat "${WG_PUB}")
+
+echo "Sua Public Key: ${WG_PUB_VALUE}"
+
+# Cria o arquivo de configuração inicial (com Peers comentados)
+cat <<-EOF | sudo tee $WG_CONF
+[Interface]
+Address = $WG_IP/$WG_CIDR
+ListenPort = 51820
+PrivateKey = ${WG_PRI_VALUE}
+
+# --- LEMBRETE DE PEERS (MAPA) ---
+# kvm2 -> 10.100.0.2 (Public IP: 76.13.71.178)
+# kvm4 -> 10.100.0.4 (Public IP: 191.101.70.130)
+# kvm8 -> 10.100.0.8 (Public IP: 89.116.73.152)
+
+# [Peer]
+# PublicKey = <CHAVE_PUBLICA_DO_OUTRO_VPS>
+# AllowedIPs = <IP_INTERNO_DO_OUTRO_VPS>/32
+# Endpoint = <IP_PUBLICO_DO_OUTRO_VPS>:51820
+# PersistentKeepalive = 25
+EOF
+
+# Habilita e inicia o serviço
+sudo systemctl enable wg-quick@wg0
+sudo systemctl restart wg-quick@wg0
+sudo wg show
+```
+
+### Passo 2: O " troca-troca" de chaves (Manual)
+
+Agora vem a parte manual. Você precisa editar o arquivo `/etc/wireguard/wg0.conf` em cada máquina e adicionar os blocos `[Peer]` das **outras duas máquinas**.
+
+Use `sudo wg show` em cada terminal para ver a Public Key de cada um e monte o quebra-cabeça.
+
+**Exemplo de como deve ficar o arquivo no `kvm2`:**
+```ini
+[Interface]
+Address = 10.100.0.2/24
+...
+
+[Peer] # kvm4
+PublicKey = <PUBLIC_KEY_DO_KVM4>
+AllowedIPs = 10.100.0.4/32
+Endpoint = 191.101.70.130:51820
+PersistentKeepalive = 25
+
+[Peer] # kvm8
+PublicKey = <PUBLIC_KEY_DO_KVM8>
+AllowedIPs = 10.100.0.8/32
+Endpoint = 89.116.73.152:51820
+PersistentKeepalive = 25
+```
+
+Após editar, aplique as mudanças:
+```bash
+sudo systemctl restart wg-quick@wg0
+sudo wg show
+```
+
+**Teste de Ping (Fundamental):**
+Do `kvm2`, tente pingar os IPs internos dos outros:
+```bash
+ping 10.100.0.4
+ping 10.100.0.8
+```
+Se pingar, parabéns! Sua rede privada criptografada está de pé.
+
+
 
 
 
