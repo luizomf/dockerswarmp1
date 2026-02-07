@@ -377,6 +377,8 @@ sudo systemctl restart ssh
 
 Mesmo sem senhas, logs de tentativas de acesso poluem o sistema e consomem recursos. O Fail2Ban bloqueia IPs que tentam conectar e falham repetidamente.
 
+> **Nota do Autor:** Sim, eu sei. Estamos rodando Fail2Ban numa máquina que já tem DOIS firewalls (Borda + UFW) bloqueando a porta 22 para todo mundo, exceto meu IP. Isso se chama "paranoia saudável" (ou exagero mesmo). Se um dia eu errar a config do firewall e abrir a porta sem querer, o Fail2Ban estará lá rindo e banindo os bots. 😂
+
 **Execute em TODAS as VPSs:**
 
 ```bash
