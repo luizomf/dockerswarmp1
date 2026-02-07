@@ -16,7 +16,7 @@ services:
       - DOCKER_API_VERSION=1.53
     command:
       - --providers.swarm=true
-      - --providers.swarm.exposedByDefault=false
+      - --providers.swarm.exposedbydefault=false
       - --providers.swarm.network=internal
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
