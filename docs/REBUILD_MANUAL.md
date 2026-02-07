@@ -185,6 +185,24 @@ Checklist rapido:
 - Docker instalado e funcionando
 - WireGuard funcionando (todos pingam `10.100.0.x`)
 
+## Nota importante: aperte o UFW depois do WireGuard
+
+Para este projeto, Swarm e NFS devem trafegar pelo WireGuard, nao pela internet.
+
+O que procurar:
+- Se `ufw status` mostrar regras do tipo "allow from <IP publico do node> to port 2377/7946/4789/2049",
+  isso significa que voce esta permitindo Swarm/NFS via internet (mesmo que o edge firewall filtre).
+
+Baseline recomendado:
+- manter `22/tcp` apenas do seu IP
+- manter `51820/udp` aberto
+- permitir Swarm/NFS somente `in on wg0 from 10.100.0.0/24`
+- no `kvm8`, abrir `80/443` para Traefik
+
+Se voce quiser ajustar rapido (com cuidado para nao se trancar fora):
+1. garanta que existe uma regra para seu SSH (seu IP) antes de mexer no resto
+2. `sudo ufw reset` e reaplique as regras do `DEV_GUIDE.md` / `scripts/vps_bootstrap`
+
 ## Recriar o Swarm (quando os nos voltarem)
 
 No `kvm8`:

@@ -109,6 +109,56 @@ export ENABLE_NOPASSWD_SUDO=0
 ./scripts/vps_bootstrap
 ```
 
+---
+
+## Checklist de validacao (pos-bootstrap + pos-WireGuard)
+
+Rode em cada VPS e confira se "bate" com o esperado.
+
+WireGuard:
+
+```bash
+ip -brief addr show wg0
+sudo wg show
+```
+
+Esperado:
+- `wg0` com IP correto (`10.100.0.2/24`, `10.100.0.4/24`, `10.100.0.8/24`)
+- `latest handshake` recente com os peers
+
+SSH hardening (config efetiva):
+
+```bash
+sudo sshd -T | egrep -i "(passwordauthentication|permitrootlogin|kbdinteractiveauthentication|usepam|allowtcpforwarding|allowagentforwarding|allowstreamlocalforwarding|maxauthtries|logingracetime)" | sort
+```
+
+UFW:
+
+```bash
+sudo ufw status verbose
+```
+
+Esperado (baseline do projeto):
+- `22/tcp` permitido apenas do seu IP (`ADMIN_SSH_CIDR`)
+- `51820/udp` (WireGuard) permitido
+- Swarm/NFS permitidos apenas via WireGuard (`in on wg0 from 10.100.0.0/24`)
+- Somente no `kvm8`: `80/tcp` e `443/tcp` permitidos
+
+Fail2ban:
+
+```bash
+sudo systemctl is-active fail2ban
+sudo fail2ban-client status sshd
+```
+
+NOPASSWD sudo (temporario):
+
+```bash
+sudo grep -R "NOPASSWD" -n /etc/sudoers.d || true
+```
+
+Se aparecer `NOPASSWD`, ok durante o bootstrap, mas lembre de remover ao final.
+
 ## WireGuard (Semi)
 
 ```

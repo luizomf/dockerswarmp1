@@ -46,6 +46,7 @@ All notable changes to this project are documented here. This file records
 - Added a rebuild manual covering safe node removal and full cluster rebuild order
 - Expanded rebuild manual with the kvm8 (last node) shutdown/leave sequence before formatting
 - Hardened VPS bootstrap script/docs (safer SSH restart, optional NOPASSWD sudo, WireGuard-only Swarm ports)
+- Added VPS post-bootstrap verification checklist (WireGuard/SSH/UFW/fail2ban/NOPASSWD)
 
 ## 2026-02-05
 
