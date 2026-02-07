@@ -51,6 +51,7 @@ All notable changes to this project are documented here. This file records
 - Switched CI build/deploy workflow to manual trigger (workflow_dispatch) to avoid GHCR limits on every push
 - Cleaned the deploy workflow matrix to only build the services used by this repo
 - Documented the "tighten UFW to wg0-only" follow-up step for existing VPS rules
+- Added concrete UFW migration commands to move Swarm/NFS rules from public IPs to wg0-only
 
 ## 2026-02-05
 

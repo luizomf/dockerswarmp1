@@ -209,6 +209,9 @@ Se voce quiser ajustar rapido (com cuidado para nao se trancar fora):
 1. garanta que existe uma regra para seu SSH (seu IP) antes de mexer no resto
 2. `sudo ufw reset` e reaplique as regras do `DEV_GUIDE.md` / `scripts/vps_bootstrap`
 
+Para uma migracao "incremental" (sem reset), veja o passo-a-passo em
+`docs/VPS_BOOTSTRAP.md` ("Apertar UFW (migracao para wg0-only)").
+
 ## Recriar o Swarm (quando os nos voltarem)
 
 No `kvm8`:

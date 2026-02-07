@@ -65,6 +65,11 @@ Drop     Any       Any         Any              Any
 - **HTTP/HTTPS abertos ao mundo**
 - **Drop all no final** → firewall default deny (correto)
 
+Nota:
+- Se voce vai rodar Swarm e NFS **por dentro do WireGuard** (recomendado neste projeto),
+  nao precisa expor `2377/7946/4789/2049` na internet. Basta `51820/udp` entre os nos,
+  e `80/443` no edge (`kvm8`). O UFW vai permitir essas portas apenas via `wg0`.
+
 ---
 
 ## Script restante para VPS
@@ -153,6 +158,41 @@ Esperado (baseline do projeto):
 Se hoje voce ainda estiver com regras de Swarm/NFS liberadas por IP publico, o
 proximo ajuste e "apertar" isso para apenas `wg0` quando o WireGuard estiver
 estavel (veja `docs/REBUILD_MANUAL.md`).
+
+### Apertar UFW (migracao para wg0-only)
+
+Se voce ja tem regras antigas liberando Swarm/NFS por IP publico, a migracao
+segura e:
+
+1. adicionar as regras `on wg0` primeiro
+2. remover as regras antigas
+3. validar com `ufw status verbose`
+
+Exemplo (ajuste os IPs para o seu ambiente):
+
+```bash
+# 1) adicionar regras via wg0
+sudo ufw allow in on wg0 from 10.100.0.0/24 to any port 2377 proto tcp
+sudo ufw allow in on wg0 from 10.100.0.0/24 to any port 7946 proto tcp
+sudo ufw allow in on wg0 from 10.100.0.0/24 to any port 7946 proto udp
+sudo ufw allow in on wg0 from 10.100.0.0/24 to any port 4789 proto udp
+
+# no kvm8 (NFS server)
+sudo ufw allow in on wg0 from 10.100.0.0/24 to any port 2049 proto tcp
+
+# no kvm8 (edge)
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# 2) remover regras antigas (exemplo)
+sudo ufw delete allow from <KVM2_PUBLIC_IP> to any port 2377 proto tcp
+sudo ufw delete allow from <KVM2_PUBLIC_IP> to any port 7946 proto tcp
+sudo ufw delete allow from <KVM2_PUBLIC_IP> to any port 7946 proto udp
+sudo ufw delete allow from <KVM2_PUBLIC_IP> to any port 4789 proto udp
+
+# 3) validar
+sudo ufw status verbose
+```
 
 Fail2ban:
 
