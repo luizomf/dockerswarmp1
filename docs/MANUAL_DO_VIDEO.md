@@ -90,3 +90,34 @@ Para garantir um ambiente limpo, formatamos todas as 3 VPSs (`kvm2`, `kvm4`, `kv
 
 > **Nota:** Existe um vídeo anterior detalhando exaustivamente este processo de criação de VPS. Aqui, usamos a imagem pronta "Ubuntu 24.04 with Docker" para ganhar tempo e garantir que o Docker Engine já venha instalado e configurado corretamente.
 
+## 2. Configuração de Hostname e DNS
+
+Acesse cada VPS via SSH (inicialmente como `root`, usando a senha definida na formatação) e configure a identidade da máquina.
+
+**Exemplo no `kvm2`:**
+
+1.  **Definir o Hostname:**
+    ```bash
+    hostnamectl set-hostname kvm2
+    ```
+
+2.  **Ajustar Hosts:**
+    Edite o arquivo para associar o IP local ao novo nome e domínio (FQDN).
+    ```bash
+    vim /etc/hosts
+    ```
+    Alterar a linha `127.0.1.1` (ou similar) para ficar assim:
+    ```text
+    127.0.1.1       kvm2.inprod.cloud       kvm2
+    ```
+
+> **Atenção aos Domínios:**
+> No vídeo, usamos 3 domínios reais diferentes que já possuem apontamentos DNS (Tipo A) criados na Cloudflare apontando para os IPs das VPSs. **Você precisará dos seus próprios domínios ou subdomínios.**
+>
+> **Mapa da Demo:**
+> - `kvm2` -> `inprod.cloud` (IP: 76.13.71.178)
+> - `kvm4` -> `otaviomiranda.cloud` (IP: 191.101.70.130)
+> - `kvm8` -> `myswarm.cloud` (IP: 89.116.73.152)
+
+*Repita o processo para `kvm4` e `kvm8` ajustando os nomes e domínios adequados.*
+
