@@ -89,6 +89,10 @@
           <span class="stat-label">Visitas Hoje (únicas)</span>
           <span class="stat-value" id="visit-count">...</span>
         </div>
+        <div class="stat-box">
+          <span class="stat-label">Container Respondendo</span>
+          <span class="stat-value" id="visit-host">...</span>
+        </div>
       </section>
 
       <!-- CONTENT GRID -->
@@ -222,10 +226,18 @@
           if (el && data && typeof data.unique_visits === 'number') {
             el.textContent = data.unique_visits.toString();
           }
+
+          const hostEl = document.getElementById('visit-host');
+          if (hostEl && data && typeof data.hostname === 'string') {
+            hostEl.textContent = data.hostname;
+          }
         })
         .catch(() => {
           const el = document.getElementById('visit-count');
           if (el) el.textContent = 'Offline';
+
+          const hostEl = document.getElementById('visit-host');
+          if (hostEl) hostEl.textContent = 'Offline';
         });
 
       function showToast(message) {

@@ -185,12 +185,17 @@ async def health_check() -> dict[str, str]:
 async def visit_counter(request: Request) -> dict[str, int | str]:
   visit_date = datetime.now(tz=UTC).date()
   visitor_hash = build_visit_hash(request, visit_date)
+  hostname = socket.gethostname()
   try:
     pool = await asyncio.to_thread(get_pool)
     unique_visits = await asyncio.to_thread(
       record_visit, pool, visit_date, visitor_hash
     )
-    return {"date": visit_date.isoformat(), "unique_visits": unique_visits}
+    return {
+      "date": visit_date.isoformat(),
+      "unique_visits": unique_visits,
+      "hostname": hostname,
+    }
   except OperationalError:
     await asyncio.to_thread(reset_pool)
     try:
@@ -198,7 +203,11 @@ async def visit_counter(request: Request) -> dict[str, int | str]:
       unique_visits = await asyncio.to_thread(
         record_visit, pool, visit_date, visitor_hash
       )
-      return {"date": visit_date.isoformat(), "unique_visits": unique_visits}
+      return {
+        "date": visit_date.isoformat(),
+        "unique_visits": unique_visits,
+        "hostname": hostname,
+      }
     except OperationalError as exc:
       raise HTTPException(status_code=503, detail="Database unavailable") from exc
 
