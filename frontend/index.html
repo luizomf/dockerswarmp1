@@ -30,7 +30,7 @@
     </div>
 
     <main class="container">
-      <!-- HERO -->
+      <!-- HERO. -->
       <section class="hero panel">
         <span class="tag">Swarm em Produção</span>
         <h1>Docker Swarm em <br />3 VPS (Produção de verdade)</h1>
@@ -169,7 +169,12 @@
           <code>curl -fsS https://app.myswarm.cloud/api/visit</code>
           <button
             class="btn-copy-code"
-            onclick="copyToClipboard('curl -fsS https://app.myswarm.cloud/api/visit', this)"
+            onclick="
+              copyToClipboard(
+                'curl -fsS https://app.myswarm.cloud/api/visit',
+                this,
+              )
+            "
           >
             Copiar
           </button>
@@ -179,7 +184,9 @@
           <code>curl -fsS https://app.myswarm.cloud/</code>
           <button
             class="btn-copy-code"
-            onclick="copyToClipboard('curl -fsS https://app.myswarm.cloud/', this)"
+            onclick="
+              copyToClipboard('curl -fsS https://app.myswarm.cloud/', this)
+            "
           >
             Copiar
           </button>
@@ -198,7 +205,13 @@
       </footer>
     </main>
 
-    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div
+      id="toast"
+      class="toast"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
 
     <script>
       // Stats Fetch
