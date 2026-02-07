@@ -118,9 +118,11 @@ Acesse cada VPS via SSH (inicialmente como `root`, usando a senha definida na fo
 > No vídeo, usamos 3 domínios reais diferentes que já possuem apontamentos DNS (Tipo A) criados na Cloudflare apontando para os IPs das VPSs. **Você precisará dos seus próprios domínios ou subdomínios.**
 >
 > **Mapa da Demo:**
-> - `kvm2` -> `inprod.cloud` (IP: 76.13.71.178)
-> - `kvm4` -> `otaviomiranda.cloud` (IP: 191.101.70.130)
-> - `kvm8` -> `myswarm.cloud` (IP: 89.116.73.152)
+> | Hostname | Domínio | IP Externo | IP VPN (WireGuard) | Usuário SSH |
+> | :--- | :--- | :--- | :--- | :--- |
+> | **kvm2** | `inprod.cloud` | `76.13.71.178` | `10.100.0.2/24` | `luizotavio` |
+> | **kvm4** | `otaviomiranda.cloud` | `191.101.70.130` | `10.100.0.4/24` | `luizotavio` |
+> | **kvm8** | `myswarm.cloud` | `89.116.73.152` | `10.100.0.8/24` | `luizotavio` |
 
 > **Dica Hostinger (Alternativa):**
 > Você também pode configurar o Hostname diretamente pelo hPanel em **VPS > Configurações > Configurações de VPS**. O painel valida se o domínio realmente pertence a você (ou aponta para a VPS). Se validado, ele configura o hostname automaticamente dentro do sistema operacional, dispensando o comando `hostnamectl`.
