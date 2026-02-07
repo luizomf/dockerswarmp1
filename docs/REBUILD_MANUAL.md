@@ -225,6 +225,13 @@ sudo exportfs -ra
 
 Clients (kvm2/kvm4/kvm8):
 
+Importante: sim, o `kvm8` tambem precisa montar `/mnt/nfs` (mesmo sendo o NFS
+server). Caso contrario o watcher falha com:
+
+```text
+mkdir: cannot create directory '/mnt/nfs': Permission denied
+```
+
 ```bash
 sudo apt-get install -y nfs-common
 sudo mkdir -p /mnt/nfs
@@ -254,6 +261,14 @@ Montar e validar:
 sudo mount -a
 findmnt /mnt/nfs
 mktemp -p /mnt/nfs/webhook_jobs perm_test.XXXXXX
+```
+
+Validacao adicional (antes do watcher):
+
+```bash
+ls -ld /mnt/nfs/webhook_jobs
+sudo -u "$USER" mktemp -p /mnt/nfs/webhook_jobs watcher_perm_test.XXXXXX
+sudo -u "$USER" rm -f /mnt/nfs/webhook_jobs/watcher_perm_test.*
 ```
 
 ## Nota importante: aperte o UFW depois do WireGuard
