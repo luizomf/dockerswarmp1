@@ -1,39 +1,115 @@
 # vim:sw=2:ts=2:et:set filetype=yaml :
 
+# Local development stack (non-Swarm).
+#
+# Goal: mimic the Swarm topology enough that "if it works here, it works in prod".
+# Trade-offs: no Swarm secrets, no Swarm deploy rules, and no overlay networking.
+
 services:
-  dockerswarm1:
+  traefik:
+    container_name: traefik
+    hostname: traefik
+    image: traefik:v3.6.7
+    command:
+      # Dev-only dashboard (DO NOT use this in prod).
+      - --api.dashboard=true
+      - --api.insecure=true
+
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=dockerswarmp1_internal
+
+      - --entrypoints.web.address=:80
+
+      - --log.level=INFO
+      - --accesslog=true
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - internal
+
+  api:
+    container_name: api
+    hostname: api
+    image: dockerswarmp1-api:local
     pull_policy: never
-    image: dockerswarmp1
     build:
       context: ../
       dockerfile: docker/Dockerfile.api
       target: production
       args:
-        - APP_UID=1011
-        - APP_GID=1011
-    restart: unless-stopped
+        - APP_UID=${APP_UID}
+        - APP_GID=${APP_GID}
+    environment:
+      - CURRENT_ENV=development
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      # Compose has no Swarm secrets, so use plain env vars locally.
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - VISIT_SALT=${VISIT_SALT}
+    env_file:
+      - ../.env
     volumes:
       - ../scripts:/scripts:ro
       - ./volumes/webhook_jobs:/app/webhook_jobs:rw
-    ports:
-      - "8000:8000"
-    env_file:
-      - ../.env
-    healthcheck:
-      test: ['CMD', 'healthcheck']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    # depends_on:
-    #   data_vol:
-    #     condition: service_started
     networks:
-      main_network:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.api.rule=Host(`app.localhost`) && PathPrefix(`/api`)
+      - traefik.http.routers.api.entrypoints=web
+      - traefik.http.routers.api.priority=100
+      - traefik.http.services.api.loadbalancer.server.port=8000
+
+  frontend:
+    container_name: frontend
+    hostname: frontend
+    image: dockerswarmp1-frontend:local
+    pull_policy: never
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.frontend
+    networks:
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`app.localhost`)
+      - traefik.http.routers.frontend.entrypoints=web
+      - traefik.http.routers.frontend.priority=1
+      - traefik.http.services.frontend.loadbalancer.server.port=8080
+
+  postgres:
+    container_name: postgres
+    hostname: postgres
+    image: postgres:18
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - internal
+    volumes:
+      # Postgres 18+ expects a mount at /var/lib/postgresql (not /var/lib/postgresql/data).
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
 networks:
-  main_network:
-    ipam:
-      driver: default
-      config:
-        - subnet: '10.11.12.0/24'
+  internal:
+    name: dockerswarmp1_internal
+
+volumes:
+  postgres_data:
+

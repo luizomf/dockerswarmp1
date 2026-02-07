@@ -24,7 +24,7 @@ _dcr *ARGS:
 
 # Docker compose down
 down *ARGS:
-  just _dc -f {{ compose_file }} --env-file {{ env_file }} down {{ ARGS }}
+  just _dc down {{ ARGS }}
 
 # Down first, then docker compose up --detach (-d)
 downupd *ARGS: down
@@ -68,21 +68,18 @@ e *ARGS:
 et *ARGS:
   just e {{ ARGS }}
 
-# Docker compose exec -it nginx sh {{ ARGS }}
-enginx *ARGS:
-  just et nginx sh {{ ARGS }}
+# Handy aliases for this project's compose services
+etraefik *ARGS:
+  just et traefik sh {{ ARGS }}
 
-# Docker compose exec -it data_vol sh {{ ARGS }}
-# edatavol *ARGS:
-#   just et data_vol sh {{ ARGS }}
+eapi *ARGS:
+  just et api sh {{ ARGS }}
 
-# Docker compose exec -it dockerlabs bash {{ ARGS }}
-edockerlabs *ARGS:
-  just et dockerlabs bash {{ ARGS }}
+efrontend *ARGS:
+  just et frontend sh {{ ARGS }}
 
-# Docker compose exec -it certbot sh {{ ARGS }}
-ecertbot *ARGS:
-  just et certbot sh {{ ARGS }}
+epostgres *ARGS:
+  just et postgres sh {{ ARGS }}
 
 # Docker compose run {{ ARGS }}
 r *ARGS:
@@ -92,21 +89,17 @@ r *ARGS:
 rt *ARGS:
   just r -it {{ ARGS }}
 
-# Docker compose run -it nginx sh {{ ARGS }}
-rnginx *ARGS:
-  just rt nginx sh {{ ARGS }}
+rtraefik *ARGS:
+  just rt traefik sh {{ ARGS }}
 
-# Docker compose run -it data_vol sh {{ ARGS }}
-# rdatavol *ARGS:
-#   just rt data_vol sh {{ ARGS }}
+rapi *ARGS:
+  just rt api sh {{ ARGS }}
 
-# Docker compose run -it dockerlabs bash {{ ARGS }}
-rdockerlabs *ARGS:
-  just rt dockerlabs bash {{ ARGS }}
+rfrontend *ARGS:
+  just rt frontend sh {{ ARGS }}
 
-# Docker compose run -it certbot sh {{ ARGS }}
-rcertbot *ARGS:
-  just rt certbot sh {{ ARGS }}
+rpostgres *ARGS:
+  just rt postgres sh {{ ARGS }}
 
 # 🚨 Docker compose down, delete all volumes and orphan containers
 nukevolumes:

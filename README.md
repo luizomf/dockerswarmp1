@@ -62,6 +62,39 @@ As variáveis essenciais para o Swarm:
 
 O `just` carrega `.env` automaticamente (`set dotenv-load := true`).
 
+## Desenvolvimento local (Docker Compose)
+
+Para desenvolver sem subir Swarm localmente, existe um Compose que sobe um stack
+menor (Traefik + frontend + API + Postgres). A ideia e: se funciona local com
+Traefik na frente e Postgres real, normalmente vai funcionar no cluster.
+
+Rotas locais:
+
+- Frontend: `http://app.localhost/`
+- API: `http://app.localhost/api/visit`
+- Dashboard do Traefik (dev-only, inseguro): `http://localhost:8080/`
+
+Comandos:
+
+```bash
+# build + up (detached)
+just upb
+
+# logs
+docker compose -f docker/compose.yaml logs -f --tail=200
+
+# down (mantem volume do Postgres)
+just down
+
+# down + apaga volumes (drop do banco local)
+just down -v
+```
+
+Notas:
+
+- Compose nao suporta Swarm secrets. Localmente usamos env vars (via `.env`).
+- O Swarm continua usando secrets externos (`*_FILE`) conforme `docker/stack.yaml`.
+
 ## CI / GHCR
 
 Este repositório possui um workflow que builda e envia imagens para o GHCR.

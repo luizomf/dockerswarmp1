@@ -172,6 +172,19 @@ ENV/
 env.bak/
 venv.bak/
 
+################################################################################
+
+### Local Docker volumes / imports
+
+# Local dev bind mounts (keep empty dirs via .gitkeep)
+docker/volumes/**
+!docker/volumes/
+!docker/volumes/webhook_jobs/
+!docker/volumes/webhook_jobs/.gitkeep
+
+# Temporary imports from other repos
+_swarm2/
+
 # Spyder project settings
 .spyderproject
 .spyproject
