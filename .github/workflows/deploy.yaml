@@ -1,21 +1,10 @@
 name: Build Full Stack
 
 # TRIGGERS
-# Este workflow roda toda vez que fazemos push para o branch 'main'.
+# Este workflow roda apenas manualmente (para nao buildar a cada commit e
+# estourar limites do GHCR).
 on:
-  # # Se quiser rodar apenas manualmente
-  # workflow_dispatch:
-
-  # # Se quiser que rode ao fazer push no 'main'
-  # Ignore arquivos irrelevantes (tipo README.md, etc).
-  push:
-    branches: ['main']
-    paths-ignore:
-      - '**/*.md'
-      - '.gitignore'
-      - 'docs/**'
-      - 'LICENSE'
-      - 'Justfile'
+  workflow_dispatch:
 
 # CONCURRENCY
 # Concorrêcia
@@ -24,7 +13,7 @@ on:
 # espera o A terminar antes de iniciar o B.
 # Também previne race conditions.
 concurrency:
-  group: deploy-main
+  group: deploy-${{ github.ref }}
   cancel-in-progress: false
 
 env:
@@ -37,7 +26,6 @@ jobs:
   # você pode ficar preso aqui.
   tests-typechecking-lint:
     runs-on: ubuntu-latest
-    # if: ${{ false }} # Se você descomentar essa linha, esse job será pulado
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -66,7 +54,6 @@ jobs:
   # Só roda se o job anterior passar.
   build-and-push:
     runs-on: ubuntu-latest
-    # if: ${{ false }} # Se você descomentar essa linha, esse job será pulado
     needs: tests-typechecking-lint
     permissions:
       contents: read
@@ -78,26 +65,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Main App
           - service: api
             dockerfile: ./docker/Dockerfile.api
             target: production # Multi-stage build com target
-          # Frontend (static nginx)
           - service: frontend
             dockerfile: ./docker/Dockerfile.frontend
             target: ''
-          # Nginx
-          # - service: nginx
-          #   dockerfile: ./Dockerfile.nginx
-          #   target: '' # Sem target
-          # Certbot
-          # - service: certbot
-          #   dockerfile: ./Dockerfile.certbot
-          #   target: ''
-          # Data Volume
-          # - service: data_vol
-          #   dockerfile: ./Dockerfile.data_vol
-          #   target: ''
 
     steps:
       - name: Checkout
@@ -148,7 +121,6 @@ jobs:
   # Só roda se todos os jobs anteriores pasarrem
   notify-server:
     runs-on: ubuntu-latest
-    # if: ${{ false }} # Se você descomentar essa linha, esse job será pulado
     needs: build-and-push
     steps:
       - name: Call deploy webhook

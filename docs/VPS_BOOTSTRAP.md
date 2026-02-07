@@ -150,6 +150,10 @@ Esperado (baseline do projeto):
 - Swarm/NFS permitidos apenas via WireGuard (`in on wg0 from 10.100.0.0/24`)
 - Somente no `kvm8`: `80/tcp` e `443/tcp` permitidos
 
+Se hoje voce ainda estiver com regras de Swarm/NFS liberadas por IP publico, o
+proximo ajuste e "apertar" isso para apenas `wg0` quando o WireGuard estiver
+estavel (veja `docs/REBUILD_MANUAL.md`).
+
 Fail2ban:
 
 ```bash

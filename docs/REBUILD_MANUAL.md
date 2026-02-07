@@ -199,6 +199,12 @@ Baseline recomendado:
 - permitir Swarm/NFS somente `in on wg0 from 10.100.0.0/24`
 - no `kvm8`, abrir `80/443` para Traefik
 
+Proximo ajuste (quando o WireGuard estiver 100% ok):
+- se hoje voce ainda tem regras de Swarm/NFS liberadas por IP publico, aperte o UFW
+  para permitir essas portas apenas via `wg0` (e manter o resto fechado). Eu so faria
+  isso quando voce disser "pode apertar agora", porque e a hora que mais da lockout
+  se uma regra estiver errada.
+
 Se voce quiser ajustar rapido (com cuidado para nao se trancar fora):
 1. garanta que existe uma regra para seu SSH (seu IP) antes de mexer no resto
 2. `sudo ufw reset` e reaplique as regras do `DEV_GUIDE.md` / `scripts/vps_bootstrap`

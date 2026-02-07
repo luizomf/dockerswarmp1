@@ -48,6 +48,9 @@ All notable changes to this project are documented here. This file records
 - Hardened VPS bootstrap script/docs (safer SSH restart, optional NOPASSWD sudo, WireGuard-only Swarm ports)
 - Added VPS post-bootstrap verification checklist (WireGuard/SSH/UFW/fail2ban/NOPASSWD)
 - Made VPS bootstrap script rerunnable via flags (skip apt upgrade, skip UFW reset) and added stricter input validation
+- Switched CI build/deploy workflow to manual trigger (workflow_dispatch) to avoid GHCR limits on every push
+- Cleaned the deploy workflow matrix to only build the services used by this repo
+- Documented the "tighten UFW to wg0-only" follow-up step for existing VPS rules
 
 ## 2026-02-05
 
