@@ -94,6 +94,9 @@ Para garantir um ambiente limpo, formatamos todas as 3 VPSs (`kvm2`, `kvm4`, `kv
 
 Acesse cada VPS via SSH (inicialmente como `root`, usando a senha definida na formatação) e configure a identidade da máquina.
 
+> **Dica de Acesso Rápido:**
+> No próprio hPanel, existe um botão **Terminal** (no topo direito da gestão da VPS). Ele abre um console web já logado como `root` (sem precisar de senha ou chave SSH configurada). É extremamente útil para esses ajustes iniciais antes de configurarmos o nosso acesso SSH definitivo.
+
 **Exemplo no `kvm2`:**
 
 1.  **Definir o Hostname:**
