@@ -305,6 +305,75 @@ git config --global core.eol lf
 git config --global init.defaultbranch main
 ```
 
+## 9. Hardening do SSH (Blindando o Acesso)
+
+Agora vamos trancar as portas. Desabilitaremos login por senha e acesso de root, deixando apenas nossas chaves autorizadas.
+
+> **⚠️ ALERTA CRÍTICO (Tranqueira à vista):**
+> Este passo **DESATIVA** o login por senha.
+> 1. Certifique-se que você já configurou suas chaves SSH (`ssh-copy-id`) no passo anterior e testou o acesso (`ssh kvm2`).
+> 2. Se você rodar isso sem ter a chave configurada, **VOCÊ PERDERÁ O ACESSO SSH** e terá que usar o console de emergência da Hostinger para consertar.
+
+**Execute em TODAS as VPSs:**
+
+```bash
+# Instala o servidor SSH (geralmente já vem, mas garante)
+sudo apt install -y openssh-server
+
+# Cria nosso arquivo de configuração blindada
+cat <<-'EOF' | sudo tee "/etc/ssh/sshd_config.d/01_sshd_settings.conf"
+###############################################################################
+### Start of /etc/ssh/sshd_config.d/01_sshd_settings.conf ######################
+###############################################################################
+
+# BLOCK 1: AUTHENTICATION AND ACCESS
+PubkeyAuthentication yes            # Apenas chaves
+PasswordAuthentication no           # Senhas desativadas (adeus brute-force)
+KbdInteractiveAuthentication no     # Sem teclado interativo
+ChallengeResponseAuthentication no  # Sem desafio-resposta
+PermitRootLogin no                  # Root nunca loga direto
+PermitEmptyPasswords no             # Sem senhas vazias
+UsePAM yes                          # PAM ativo para sessão (mas auth é só key)
+AuthenticationMethods publickey     # Força auth apenas por chave pública
+
+# BLOCK 2: ATTACK SURFACE REDUCTION
+PermitUserEnvironment no            # Bloqueia injeção de env
+PermitUserRC no                     # Bloqueia scripts rc de usuário
+X11Forwarding no                    # Sem interface gráfica remota
+
+# TUNNELING (Ajuste se precisar de túneis)
+AllowTcpForwarding no               # Bloqueia túneis TCP
+AllowStreamLocalForwarding no       # Bloqueia socket forwarding
+AllowAgentForwarding no             # Bloqueia agent forwarding
+
+PermitOpen none                     # Bloqueia forwarding arbitrário
+PermitListen none                   # Bloqueia abrir portas remotas
+GatewayPorts no                     # Bloqueia gateway ports
+PermitTunnel no                     # Bloqueia interfaces tun/tap
+
+# BLOCK 3: PERFORMANCE & TIMEOUTS
+MaxAuthTries 4                      # Max 4 tentativas
+LoginGraceTime 30                   # 30s para logar ou tchau
+ClientAliveInterval 300             # Keepalive a cada 5 min
+ClientAliveCountMax 2               # Cai se não responder 2x
+PrintMotd no                        # Menos spam no login
+UseDNS no                           # Login rápido (sem reverse DNS lookup)
+
+###############################################################################
+### End of /etc/ssh/sshd_config.d/01_sshd_settings.conf ########################
+###############################################################################
+EOF
+
+# Testa a configuração antes de reiniciar (se der erro, NÃO reinicie)
+sudo sshd -t
+
+# Reinicia o serviço SSH para aplicar
+sudo systemctl restart ssh
+```
+
+> **Dica:** Mantenha sua sessão atual aberta. Abra **outro terminal** no seu PC e tente conectar (`ssh kvm2`). Se funcionar, sucesso! Se não, você ainda tem a sessão aberta para corrigir.
+
+
 
 
 
