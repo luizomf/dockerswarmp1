@@ -29,15 +29,54 @@ WG_INTERFACE="${WG_INTERFACE:-wg0}"
 ENABLE_NOPASSWD_SUDO="${ENABLE_NOPASSWD_SUDO:-0}"
 INSTALL_SHELL_SETUP="${INSTALL_SHELL_SETUP:-1}"
 IS_EDGE_NODE="${IS_EDGE_NODE:-0}"
+ENABLE_APT_UPGRADE="${ENABLE_APT_UPGRADE:-1}"
+ENABLE_UFW_RESET="${ENABLE_UFW_RESET:-1}"
+REQUIRE_AUTHORIZED_KEYS="${REQUIRE_AUTHORIZED_KEYS:-1}"
 
 FAIL2BAN_IGNOREIP="${FAIL2BAN_IGNOREIP:-$ADMIN_SSH_CIDR 127.0.0.1/8 ::1}"
+
+###############################################################################
+### HELPERS ###################################################################
+###############################################################################
+
+die() {
+  echo "ERROR: $*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+validate_cidr() {
+  local value="$1"
+  [[ -n "$value" ]] || die "CIDR is empty"
+  [[ "$value" == */* ]] || die "CIDR must include a mask, got: $value"
+}
+
+validate_bool() {
+  local name="$1"
+  local value="$2"
+  [[ "$value" == "0" || "$value" == "1" ]] || die "$name must be 0 or 1 (got: $value)"
+}
+
+validate_cidr "$ADMIN_SSH_CIDR"
+validate_cidr "$WG_CIDR"
+validate_bool "ENABLE_NOPASSWD_SUDO" "$ENABLE_NOPASSWD_SUDO"
+validate_bool "INSTALL_SHELL_SETUP" "$INSTALL_SHELL_SETUP"
+validate_bool "IS_EDGE_NODE" "$IS_EDGE_NODE"
+validate_bool "ENABLE_APT_UPGRADE" "$ENABLE_APT_UPGRADE"
+validate_bool "ENABLE_UFW_RESET" "$ENABLE_UFW_RESET"
+validate_bool "REQUIRE_AUTHORIZED_KEYS" "$REQUIRE_AUTHORIZED_KEYS"
 
 ###############################################################################
 ### INSTALL COMMON PACKAGES ###################################################
 ###############################################################################
 
 sudo apt update -y
-sudo apt upgrade -y
+if [[ "$ENABLE_APT_UPGRADE" -eq 1 ]]; then
+  sudo apt upgrade -y
+fi
 
 sudo apt install -y vim curl ca-certificates htop python3 \
 python3-dev acl build-essential tree just
@@ -61,7 +100,7 @@ Copy your SSH public key first (to avoid lockout), then rerun:
 If you know what you're doing and still want to continue, set:
   REQUIRE_AUTHORIZED_KEYS=0
 EOF
-  if [[ "${REQUIRE_AUTHORIZED_KEYS:-1}" -ne 0 ]]; then
+  if [[ "$REQUIRE_AUTHORIZED_KEYS" -ne 0 ]]; then
     exit 1
   fi
 fi
@@ -74,6 +113,7 @@ sudo usermod -aG sudo "$CURRENT_USER"
 
 sudoers_file="/etc/sudoers.d/${CURRENT_USER}"
 if [[ "$ENABLE_NOPASSWD_SUDO" -eq 1 ]]; then
+  require_cmd visudo
   tmp_sudoers="$(mktemp)"
   printf '%s ALL=(ALL) NOPASSWD: ALL\n' "$CURRENT_USER" > "$tmp_sudoers"
   sudo visudo -cf "$tmp_sudoers"
@@ -172,7 +212,7 @@ UseDNS no                           # Disable reverse DNS (much faster logins)
 ###############################################################################
 EOF
 
-# Validate before restarting (avoid accidental lockout due to config typo).
+require_cmd sshd
 sudo sshd -t
 sudo systemctl restart ssh
 
@@ -220,8 +260,10 @@ sudo systemctl restart fail2ban
 
 sudo apt install -y ufw
 
-sudo ufw disable
-sudo ufw --force reset
+if [[ "$ENABLE_UFW_RESET" -eq 1 ]]; then
+  sudo ufw disable
+  sudo ufw --force reset
+fi
 
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
@@ -262,7 +304,12 @@ sudo apt install -y wireguard
 
 # Generate private and public keys if it does not exist
 if [[ ! -f /etc/wireguard/private.key ]]; then
-  sudo wg genkey | sudo tee /etc/wireguard/private.key | sudo wg pubkey | sudo tee /etc/wireguard/public.key
+  require_cmd wg
+  sudo install -d -m 0700 -o root -g root /etc/wireguard
+  sudo wg genkey | sudo tee /etc/wireguard/private.key >/dev/null
+  sudo chmod 600 /etc/wireguard/private.key
+  sudo sh -c 'wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key'
+  sudo chmod 644 /etc/wireguard/public.key
 fi
 
 cat <<-EOF | sudo tee "/etc/wireguard/wg0.conf"

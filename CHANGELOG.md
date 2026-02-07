@@ -47,6 +47,7 @@ All notable changes to this project are documented here. This file records
 - Expanded rebuild manual with the kvm8 (last node) shutdown/leave sequence before formatting
 - Hardened VPS bootstrap script/docs (safer SSH restart, optional NOPASSWD sudo, WireGuard-only Swarm ports)
 - Added VPS post-bootstrap verification checklist (WireGuard/SSH/UFW/fail2ban/NOPASSWD)
+- Made VPS bootstrap script rerunnable via flags (skip apt upgrade, skip UFW reset) and added stricter input validation
 
 ## 2026-02-05
 

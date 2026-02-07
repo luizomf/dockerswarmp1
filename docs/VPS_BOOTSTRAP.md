@@ -99,6 +99,12 @@ export IS_EDGE_NODE=1
 # somente se você quiser NOPASSWD temporariamente
 export ENABLE_NOPASSWD_SUDO=1
 
+# se você for rerodar o script e não quiser ficar fazendo upgrade toda vez
+export ENABLE_APT_UPGRADE=0
+
+# se você já configurou UFW e só quer "garantir as regras", sem resetar tudo
+export ENABLE_UFW_RESET=0
+
 ./scripts/vps_bootstrap
 ```
 
