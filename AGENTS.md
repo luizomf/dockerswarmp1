@@ -41,6 +41,8 @@ You must strictly follow this cycle for every task. Do not skip steps.
 ## 4. Memory & Context
 
 - Refer to `PLAN.md` for current objectives.
+- Use `docs/INBOX.md` as an ideas/backlog inbox. Only implement items after
+  promoting them into `PLAN.md`.
 - Refer to `CHANGELOG.md` for project history.
 - If a new architectural rule is established, explicitly ask to update
   `AGENTS.md`.

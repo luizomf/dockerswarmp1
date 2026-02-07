@@ -33,4 +33,3 @@ Template recomendado:
 ## Estacionadas (depois do video)
 
 - [ ]
-
