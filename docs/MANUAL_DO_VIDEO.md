@@ -129,3 +129,30 @@ Acesse cada VPS via SSH (inicialmente como `root`, usando a senha definida na fo
 
 *Repita o processo para `kvm4` e `kvm8` ajustando os nomes e domínios adequados.*
 
+## 3. Firewall de Borda (hPanel)
+
+Antes de configurar o firewall interno (UFW), configuramos o **Firewall da Hostinger** (hPanel) para proteger a rede antes mesmo que o tráfego chegue nas VPSs.
+
+A política adotada é **Whitelist**: Bloqueia tudo (Drop) e libera apenas o necessário.
+
+**Regras Aplicadas (Aplicar em TODAS as VPS):**
+
+| Ação | Protocolo | Porta | Origem (Source) | Descrição |
+| :--- | :--- | :--- | :--- | :--- |
+| **Accept** | TCP | Any | `187.108.118.25` (Seu IP) | Acesso total do admin (SSH, etc) |
+| **Accept** | TCP | Any | `89.116...`, `191.101...`, `76.13...` | Comunicação total entre os nós (Swarm TCP) |
+| **Accept** | UDP | `4789` | `89.116...`, `191.101...`, `76.13...` | Swarm Overlay Network (VXLAN) |
+| **Accept** | UDP | `7946` | `89.116...`, `191.101...`, `76.13...` | Swarm Container Network Discovery |
+| **Accept** | ICMP | Any | `89.116...`, `191.101...`, `76.13...` | Ping entre os nós |
+| **Accept** | ICMP | Any | `187.108.118.25` (Seu IP) | Ping do admin |
+| **Accept** | HTTPS | `443` | `Any` (Qualquer) | Tráfego Web Seguro (Traefik) |
+| **Accept** | HTTP | `80` | `Any` (Qualquer) | Tráfego Web (Traefik) |
+| **Accept** | UDP | `51820` | IPs dos Nós + Seu IP | WireGuard VPN |
+| **Accept** | TCP | `8080` | `187.108.118.25` (Seu IP) | Traefik Dashboard (Dev/Debug) |
+| **Drop** | Any | Any | `Any` | **Regra Final: Bloqueia todo o resto** |
+
+> **Nota:** Certifique-se de substituir o IP `187.108.118.25` pelo **SEU IP** atual de internet. Os demais IPs devem ser os IPs das suas outras VPSs.
+
+> **Importante:** Essa configuração protege a borda. Ainda assim, configuraremos o `UFW` (firewall local) mais adiante para defesa em profundidade e controle da VPN.
+
+
