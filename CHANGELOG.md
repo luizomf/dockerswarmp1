@@ -49,6 +49,11 @@ All notable changes to this project are documented here. This file records
 - Made VPS bootstrap script rerunnable via flags (skip apt upgrade, skip UFW reset) and added stricter input validation
 - Switched CI build/deploy workflow to manual trigger (workflow_dispatch) to avoid GHCR limits on every push
 - Cleaned the deploy workflow matrix to only build the services used by this repo
+- Added a security review report under docs/
+- Disabled FastAPI OpenAPI/docs endpoints in production (reduce public attack surface)
+- Added basic security headers to the frontend Nginx config (nosniff, frame deny, referrer policy)
+- Bound the local Traefik dashboard port to 127.0.0.1 in Compose (avoid accidental LAN exposure)
+- Added safety checks to the deploy watcher to avoid dangerous deletes if misconfigured
 - Documented the "tighten UFW to wg0-only" follow-up step for existing VPS rules
 - Added concrete UFW migration commands to move Swarm/NFS rules from public IPs to wg0-only
 - Added an ideas inbox under docs/ to capture improvements without derailing PLAN.md

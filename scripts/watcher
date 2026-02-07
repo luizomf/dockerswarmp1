@@ -15,6 +15,11 @@ WEBHOOKS_JOBS_DIR="${WEBHOOKS_JOBS_DIR:-/mnt/nfs/webhook_jobs}"
 LOCK_FILE="${LOCK_FILE:-/tmp/webhook_deploy.lock}"
 DEPLOY_COMMAND="${DEPLOY_COMMAND:-just stack-deploy}"
 
+if [[ -z "$WEBHOOKS_JOBS_DIR" || "$WEBHOOKS_JOBS_DIR" == "/" || "$WEBHOOKS_JOBS_DIR" != /* ]]; then
+  echo "ERROR: WEBHOOKS_JOBS_DIR must be a non-root absolute path." >&2
+  exit 1
+fi
+
 mkdir -p "$WEBHOOKS_JOBS_DIR"
 
 log() {
@@ -44,8 +49,6 @@ while true; do
     else
       log "Deploy failed."
     fi
-
-    echo "$PARENT_DIR"
 
   ) 200>"$LOCK_FILE"
 

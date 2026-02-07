@@ -29,7 +29,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
       app.state.pool = None
 
 
-app = FastAPI(lifespan=lifespan)
+current_env = os.getenv("CURRENT_ENV", "development").lower()
+is_production = current_env == "production"
+
+app = FastAPI(
+  lifespan=lifespan,
+  # Reduce public attack surface in production. In this project, the API is
+  # public on the Internet, and the docs are not required for the demo.
+  docs_url=None if is_production else "/docs",
+  redoc_url=None if is_production else "/redoc",
+  openapi_url=None if is_production else "/openapi.json",
+)
 
 WEBHOOK_DIR = Path("/app/webhook_jobs")
 
