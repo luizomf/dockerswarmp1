@@ -373,6 +373,47 @@ sudo systemctl restart ssh
 
 > **Dica:** Mantenha sua sessão atual aberta. Abra **outro terminal** no seu PC e tente conectar (`ssh kvm2`). Se funcionar, sucesso! Se não, você ainda tem a sessão aberta para corrigir.
 
+## 10. Fail2Ban (Proteção Brute-Force)
+
+Mesmo sem senhas, logs de tentativas de acesso poluem o sistema e consomem recursos. O Fail2Ban bloqueia IPs que tentam conectar e falham repetidamente.
+
+**Execute em TODAS as VPSs:**
+
+```bash
+# Defina o IP da sua casa/escritório para nunca ser banido (whitelist)
+export ADMIN_SSH_CIDR="187.108.118.25/32" # <-- Troque pelo SEU IP
+export FAIL2BAN_IGNOREIP="$ADMIN_SSH_CIDR 127.0.0.1/8 ::1"
+
+# Instala o Fail2Ban
+sudo apt install fail2ban -y
+
+# Cria a configuração local (jail.local)
+cat <<-EOF | sudo tee "/etc/fail2ban/jail.local"
+[DEFAULT]
+
+[sshd]
+enabled = true
+port = ssh
+backend = systemd
+# IPs ignorados (você e o localhost)
+ignoreip = ${FAIL2BAN_IGNOREIP}
+
+# Regras de banimento
+maxretry = 5          # 5 tentativas falhas
+findtime = 10m        # dentro de 10 minutos
+bantime = 1h          # = Banido por 1 hora
+
+# Banimento progressivo para reincidentes
+bantime.increment = true
+bantime.factor = 2    # Dobra o tempo a cada reincidência
+bantime.max = 24h     # Até o máximo de 24h
+EOF
+
+# Reinicia o serviço
+sudo systemctl restart fail2ban
+```
+
+
 
 
 
