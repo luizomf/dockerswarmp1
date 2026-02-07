@@ -236,8 +236,9 @@ sudo usermod -aG app "$USER" || true
 ```
 
 Nota:
-- Mesmo detalhe do server: faça relogin ou `newgrp app` para a permissao do grupo
-  passar a valer na sessao atual.
+
+- Mesmo detalhe do server: faça relogin ou `newgrp app` para a permissao do
+  grupo passar a valer na sessao atual.
 
 `/etc/fstab` (mais resiliente no boot):
 
@@ -317,6 +318,7 @@ Se voce nao usa SSH no GitHub, troque por HTTPS:
 
 ```bash
 git clone https://github.com/luizomf/dockerswarmp1.git /opt/dockerswarmp1
+cp .env.example
 ```
 
 No repositorio (no `kvm8`):
@@ -334,11 +336,19 @@ Objetivo: deixar o deploy "rodavel" sem sair deste arquivo.
 Ordem recomendada (no `kvm8`):
 
 1. preparar `.env`
-2. login no GHCR
+2. login no GHCR (comandos mais abaixo)
 3. criar secrets no Swarm
 4. deploy do stack
-5. validacao (curl + logs)
+5. Validação (curl + logs)
 6. watcher (auto deploy)
+
+Os secrets do docker swarm para essa aplicação são: `github_webhook_secret` e
+`postgres_password`.
+
+Os secrets das actions são: `DEPLOY_WEBHOOK_SECRET` (mesmo valor do
+`github_webhook_secret`) e `DEPLOY_WEBHOOK_URL` (URL do Webhook).
+
+Em nosso caso, a URL do webhook é `https://<DOMINIO>/api/webhook/github`.
 
 ### 1) Preparar `.env` (kvm8)
 
