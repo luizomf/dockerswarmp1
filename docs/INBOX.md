@@ -44,29 +44,7 @@ Template recomendado:
 
 ## Novas (triagem)
 
-- [ ] Subir o swarm (tags: infra)
-  Owner: user
-  Files: N/A (VPS)
-  Contexto: Podemos subir o swarm (swarm init).
-  Objetivo: Iniciar o cluster.
-  Notas: Isso foi um teste de nota (vamos fazer isso mesmo).
-  Output: docs/REBUILD_MANUAL.md + comandos validados
-
-- [ ] Redes da stack parecem incorretas (tags: infra)
-  Owner: codex
-  Files: docker/stack.yaml
-  Contexto: Traefik está em `public`, mas deveria estar em `public` + `internal`.
-  Objetivo: Confirmar e corrigir redes/labels/entrypoints.
-  Notas: Verificar antes no cluster (o que e edge/internal de verdade).
-  Output: commit + changelog
-
-- [ ] HTML do Frontend (tags: video)
-  Owner: gemini
-  Files: frontend/index.html frontend/style.css
-  Contexto: O frontend esta bonito, mas nao fala nada do link/cupom.
-  Objetivo: Incluir link e cupom (Hostinger) visivel e bonito pra aparecer no video.
-  Notas: Gemini gera 2-3 variacoes de copy/layout; Codex integra.
-  Output: 1 commit com a pagina atualizada
+- [ ]
 
 ## Prontas Para Virar PLAN (aprovadas)
 
