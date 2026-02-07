@@ -258,6 +258,32 @@ luizotavio ALL=(ALL) NOPASSWD: ALL
 
 Salve e saia. Agora comandos como `sudo apt update` rodarão direto.
 
+## 7. Atualização e Pacotes Básicos
+
+Vamos garantir que o sistema esteja seguro, atualizado e com nossas ferramentas favoritas instaladas.
+
+**Execute em TODAS as VPSs:**
+
+```bash
+# Define seu fuso horário (ajuste conforme necessário)
+export TIMEZONE='America/Sao_Paulo'
+
+# Atualiza repositórios e pacotes do sistema
+sudo apt update -y
+sudo apt upgrade -y
+
+# Instala ferramentas essenciais
+# just: task runner (usaremos muito)
+# python3/build-essential: para scripts e compilação
+# acl: para controle fino de permissões
+sudo apt install -y vim curl ca-certificates htop python3 \
+python3-dev acl build-essential tree just
+
+# Aplica o fuso horário
+sudo timedatectl set-timezone "$TIMEZONE"
+```
+
+
 
 
 
