@@ -47,6 +47,11 @@ You must strictly follow this cycle for every task. Do not skip steps.
   have an Owner + Files. Only the Owner edits those files; everyone else
   contributes via suggestions/drafts. Treat Gemini strictly as a suggestion
   engine, and integrate changes via Codex commits.
+- Ownership rules (to stay fast and avoid merge conflicts):
+  - `docs/INBOX.md`: user-owned. Only the user edits it day-to-day (add ideas,
+    triage). Codex only edits it to adjust the template/rules when requested.
+  - `PLAN.md`: Codex-owned while implementing. It should not be edited in feature
+    branches, and should be cleared when work is done.
 - Refer to `CHANGELOG.md` for project history.
 - If a new architectural rule is established, explicitly ask to update
   `AGENTS.md`.

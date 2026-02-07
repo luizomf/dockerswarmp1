@@ -55,6 +55,7 @@ All notable changes to this project are documented here. This file records
 - Documented the ideas inbox workflow in AGENTS.md
 - Extended the inbox workflow with Owner+Files to avoid conflicts and coordinate Gemini tasks
 - Removed the stored Gemini prompt doc; use inline prompts and the inbox owner workflow
+- Documented explicit ownership rules for PLAN.md (Codex) and docs/INBOX.md (user)
 
 ## 2026-02-05
 
