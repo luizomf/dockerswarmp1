@@ -31,6 +31,34 @@ upb *ARGS:
 upb-scale-api COUNT="3":
   just compose up -d --build --remove-orphans --scale api={{ COUNT }}
 
+reset-local:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  if [[ ! -f "{{ env_file }}" ]]; then
+    cp "{{ env_file }}.example" "{{ env_file }}"
+  fi
+  just down --remove-orphans
+  just upb --force-recreate
+
+nuke-local CONFIRM="no":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  if [[ "{{ CONFIRM }}" != "yes" ]]; then
+    echo "Refusing to run."
+    echo "This will delete the local Docker Compose stack for this repo, INCLUDING the Postgres volume (data loss)."
+    echo ""
+    echo "Run:"
+    echo "  just nuke-local CONFIRM=yes"
+    exit 1
+  fi
+
+  if [[ ! -f "{{ env_file }}" ]]; then
+    cp "{{ env_file }}.example" "{{ env_file }}"
+  fi
+
+  just down --volumes --remove-orphans
+  just upb --force-recreate
+
 down *ARGS:
   just compose down {{ ARGS }}
 

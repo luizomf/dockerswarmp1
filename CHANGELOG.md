@@ -78,6 +78,7 @@ All notable changes to this project are documented here. This file records
 - Added a Just recipe to scale the API service locally for hostname demo
 - Stripped Server header via Traefik middleware (API + frontend)
 - Added a Just recipe to list API containers across kvm2/kvm4/kvm8 via SSH
+- Added Just recipes to reset the local Compose stack and wipe volumes with explicit confirmation
 - Clarified VISIT_SALT behavior and fallback in .env.example
 - Ignored .env.* files (except .env.example) to prevent accidental local env commits
 - Summarized key security review highlights and trade-offs in README
