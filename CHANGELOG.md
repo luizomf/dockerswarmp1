@@ -44,6 +44,7 @@ All notable changes to this project are documented here. This file records
 - Simplified Justfile recipes (kept only essential Compose/Swarm/watcher commands)
 - Added a guardrail prompt for Gemini second opinions (no tools / no repo touch)
 - Added a rebuild manual covering safe node removal and full cluster rebuild order
+- Expanded rebuild manual with the kvm8 (last node) shutdown/leave sequence before formatting
 
 ## 2026-02-05
 

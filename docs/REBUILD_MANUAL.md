@@ -96,6 +96,84 @@ Sim, o mesmo fluxo.
 Atencao: ao remover `kvm4` voce ficara com apenas 1 manager (`kvm8`). Evite
 parar o `kvm8` ate o cluster estar reconstruido.
 
+## Manutencao: remover o ultimo node (`kvm8`) antes de formatar
+
+Quando `kvm2` e `kvm4` ja foram removidos, o Swarm fica "sozinho" no `kvm8`.
+Antes de formatar o `kvm8`, o mais limpo e:
+
+1. parar o watcher (systemd) se estiver instalado
+2. remover a stack (services)
+3. remover secrets e networks (opcional, mas deixa o host mais "limpo")
+4. sair do swarm
+
+### 0) Validar que so existe o `kvm8`
+
+No `kvm8`:
+
+```bash
+docker node ls
+docker stack ls
+docker stack services dockerswarmp1
+```
+
+### 1) Parar o watcher (se existir)
+
+No `kvm8`:
+
+```bash
+cd /opt/dockerswarmp1
+just watcher-uninstall
+```
+
+Ou manual (se preferir):
+
+```bash
+sudo systemctl disable --now webhook-watcher || true
+sudo rm -f /etc/systemd/system/webhook-watcher.service
+sudo systemctl daemon-reload
+```
+
+### 2) Remover a stack
+
+No `kvm8`:
+
+```bash
+docker stack rm dockerswarmp1
+```
+
+Espere limpar:
+
+```bash
+docker stack ls
+docker service ls
+```
+
+### 3) (Opcional) Remover networks overlay e secrets
+
+Se voce quer deixar o host "limpo" antes de formatar:
+
+```bash
+docker secret ls
+docker secret rm github_webhook_secret postgres_password || true
+
+docker network ls
+docker network rm public internal || true
+```
+
+### 4) Sair do Swarm (ultimo manager)
+
+No `kvm8`:
+
+```bash
+docker swarm leave --force
+```
+
+Validacao:
+
+```bash
+docker info | grep -n "Swarm:"
+```
+
 ## Post-format (resumo) por no
 
 Para detalhes e comandos: veja `DEV_GUIDE.md`.
@@ -137,4 +215,3 @@ Tudo isso esta no `DEV_GUIDE.md` e `README.md`. Ordem recomendada:
 2. criar secrets (`github_webhook_secret`, `postgres_password`)
 3. `just stack-deploy`
 4. watcher (`just watcher-install`)
-
