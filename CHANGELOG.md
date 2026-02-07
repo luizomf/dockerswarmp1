@@ -57,6 +57,7 @@ All notable changes to this project are documented here. This file records
 - Removed the stored Gemini prompt doc; use inline prompts and the inbox owner workflow
 - Documented explicit ownership rules for PLAN.md (Codex) and docs/INBOX.md (user)
 - Fixed rebuild manual gaps (repo checkout under /opt and NFS setup before stack deploy)
+- Documented that group membership changes require relogin/newgrp (prevents NFS "permission denied" confusion)
 
 ## 2026-02-05
 

@@ -214,6 +214,10 @@ sudo chmod 2770 /srv/nfs/swarm_data/webhook_jobs
 sudo setfacl -R -m g:app:rwx /srv/nfs/swarm_data/webhook_jobs
 sudo setfacl -R -m d:g:app:rwx /srv/nfs/swarm_data/webhook_jobs
 
+# Importante: depois de `usermod -aG ...`, sua sessao SSH atual nao pega o grupo
+# novo. Faça relogin ou rode: `newgrp app`.
+# Para confirmar: `id -nG | tr ' ' '\n' | grep -x app`.
+
 EXPORT_LINE="/srv/nfs/swarm_data 10.100.0.0/24(rw,sync,no_subtree_check,fsid=0,no_root_squash)"
 sudo grep -qF "$EXPORT_LINE" /etc/exports || echo "$EXPORT_LINE" | sudo tee -a /etc/exports
 sudo exportfs -ra
@@ -231,10 +235,16 @@ sudo groupadd -g 1011 app || true
 sudo usermod -aG app "$USER" || true
 ```
 
+Nota:
+- Mesmo detalhe do server: faça relogin ou `newgrp app` para a permissao do grupo
+  passar a valer na sessao atual.
+
 `/etc/fstab` (mais resiliente no boot):
 
-```text
+```bash
+sudo vim /etc/fstab
 10.100.0.8:/ /mnt/nfs nfs4 rw,vers=4.2,_netdev,noatime,nofail,x-systemd.automount,x-systemd.idle-timeout=600,x-systemd.device-timeout=10s,x-systemd.mount-timeout=30s,x-systemd.requires=wg-quick@wg0.service 0 0
+sudo systemctl daemon-reload
 ```
 
 Montar e validar:

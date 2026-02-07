@@ -190,6 +190,11 @@ sudo groupadd -g 1011 app || true
 sudo usermod -aG app luizotavio
 ```
 
+Nota:
+- Depois de adicionar um usuario a um grupo (`usermod -aG ...`), a sessao SSH
+  atual nao pega o grupo novo. Saia e entre de novo (relogin) ou rode
+  `newgrp app`. Para confirmar: `id -nG | tr ' ' '\\n' | grep -x app`.
+
 No `kvm8` (server NFS):
 
 ```bash
@@ -266,4 +271,3 @@ Watcher (kvm8):
 just watcher-install
 just watcher-logs
 ```
-
