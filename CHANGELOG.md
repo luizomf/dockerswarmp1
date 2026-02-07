@@ -43,6 +43,7 @@ All notable changes to this project are documented here. This file records
 - Added a full local Docker Compose dev stack (Traefik + API + frontend + Postgres)
 - Simplified Justfile recipes (kept only essential Compose/Swarm/watcher commands)
 - Added a guardrail prompt for Gemini second opinions (no tools / no repo touch)
+- Added a rebuild manual covering safe node removal and full cluster rebuild order
 
 ## 2026-02-05
 
