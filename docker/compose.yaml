@@ -63,9 +63,11 @@ services:
         condition: service_healthy
     labels:
       - traefik.enable=true
+      - traefik.http.middlewares.strip-server-header.headers.customresponseheaders.server=
       - traefik.http.routers.api.rule=Host(`app.localhost`) && PathPrefix(`/api`)
       - traefik.http.routers.api.entrypoints=web
       - traefik.http.routers.api.priority=100
+      - traefik.http.routers.api.middlewares=strip-server-header
       - traefik.http.services.api.loadbalancer.server.port=8000
 
   frontend:
@@ -80,9 +82,11 @@ services:
       - internal
     labels:
       - traefik.enable=true
+      - traefik.http.middlewares.strip-server-header.headers.customresponseheaders.server=
       - traefik.http.routers.frontend.rule=Host(`app.localhost`)
       - traefik.http.routers.frontend.entrypoints=web
       - traefik.http.routers.frontend.priority=1
+      - traefik.http.routers.frontend.middlewares=strip-server-header
       - traefik.http.services.frontend.loadbalancer.server.port=8080
 
   postgres:
