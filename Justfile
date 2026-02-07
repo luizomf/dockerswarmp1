@@ -69,6 +69,13 @@ stack-services:
 stack-logs SERVICE:
   docker service logs {{ stack_name }}_{{ SERVICE }}
 
+stack-api-containers:
+  for host in kvm2 kvm4 kvm8; do \
+    echo "==> $$host"; \
+    ssh "$$host" 'docker ps --filter name=dockerswarmp1_api'; \
+    echo ""; \
+  done
+
 ################################################################################
 # Watcher (Systemd on kvm8)
 ################################################################################

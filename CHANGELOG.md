@@ -77,6 +77,7 @@ All notable changes to this project are documented here. This file records
 - Allowed unique container hostnames in local Compose by removing fixed API hostname/container_name
 - Added a Just recipe to scale the API service locally for hostname demo
 - Stripped Server header via Traefik middleware (API + frontend)
+- Added a Just recipe to list API containers across kvm2/kvm4/kvm8 via SSH
 
 ## 2026-02-05
 
