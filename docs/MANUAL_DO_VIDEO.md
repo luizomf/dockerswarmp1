@@ -596,6 +596,90 @@ ping 10.100.0.8
 ```
 Se pingar, parabéns! Sua rede privada criptografada está de pé.
 
+## 14. Configuração do NFS (Storage Compartilhado)
+
+Como estamos em um cluster, precisamos de um local comum para que arquivos (como os jobs do webhook) sejam vistos por todos, independente de onde o serviço esteja rodando. O `kvm8` será nosso servidor de arquivos.
+
+### Servidor NFS (Apenas no kvm8)
+
+Configuramos o servidor com permissões restritas (UID/GID 1011) para alinhar com o usuário que rodará dentro dos containers.
+
+```bash
+# Instala o servidor
+sudo apt-get install -y nfs-kernel-server
+
+# Cria os diretórios
+sudo mkdir -p /srv/nfs/swarm_data/webhook_jobs
+
+# === Permissões e Grupos ===
+# Cria grupo 'app' com GID 1011 (mesmo ID usado no container da API)
+sudo groupadd -g 1011 app || true
+# Adiciona seu usuário ao grupo para você poder gerenciar arquivos
+sudo usermod -aG app "$USER" || true
+
+# Aplica permissões
+sudo chown -R root:app /srv/nfs/swarm_data/webhook_jobs
+sudo chmod 2770 /srv/nfs/swarm_data/webhook_jobs
+# ACLs para garantir que novos arquivos herdem as permissões
+sudo setfacl -R -m g:app:rwx /srv/nfs/swarm_data/webhook_jobs
+sudo setfacl -R -m d:g:app:rwx /srv/nfs/swarm_data/webhook_jobs
+
+# Aplica mudanças de grupo na sessão atual
+newgrp app
+
+# === Exportação (Compartilhamento) ===
+# Define a regra de exportação para a rede VPN (10.100.0.0/24)
+# all_squash + anonuid=1011: Força tudo a ser escrito como usuário 'app'
+EXPORT_LINE="/srv/nfs/swarm_data 10.100.0.0/24(rw,sync,no_subtree_check,all_squash,anonuid=1011,anongid=1011,fsid=0)"
+sudo grep -qF "$EXPORT_LINE" /etc/exports || echo "$EXPORT_LINE" | sudo tee -a /etc/exports
+
+# Aplica e verifica
+sudo exportfs -ra
+sudo exportfs -v
+```
+
+### Clientes NFS (kvm2, kvm4 e também no kvm8)
+
+Todos os nós precisam montar essa pasta. Sim, inclusive o `kvm8` monta a própria pasta via rede (loopback/VPN) para garantir que o caminho `/mnt/nfs` seja idêntico em todo o cluster.
+
+```bash
+# Instala o cliente
+sudo apt-get install -y nfs-common
+sudo mkdir -p /mnt/nfs
+
+# Cria o grupo localmente para alinhar permissões (opcional, mas recomendado)
+sudo groupadd -g 1011 app || true
+sudo usermod -aG app "$USER" || true
+
+# Configura a montagem automática no Boot (/etc/fstab)
+# Destaque para x-systemd.requires=wg-quick@wg0.service:
+# Só tenta montar DEPOIS que a VPN subir.
+echo "10.100.0.8:/ /mnt/nfs nfs4 rw,vers=4.2,_netdev,noatime,nofail,x-systemd.automount,x-systemd.idle-timeout=600,x-systemd.device-timeout=10s,x-systemd.mount-timeout=30s,x-systemd.requires=wg-quick@wg0.service 0 0" | sudo tee -a /etc/fstab
+
+sudo systemctl daemon-reload
+
+# Monta tudo
+sudo mount -a
+
+# Verifica se montou
+findmnt /mnt/nfs
+```
+
+### Validação Final de Permissões
+Teste se conseguimos escrever na pasta compartilhada (como se fossemos o app). Execute em qualquer nó:
+
+```bash
+# Tenta criar um arquivo de teste
+mktemp -p /mnt/nfs/webhook_jobs perm_test.XXXXXX
+
+# Verifica permissões
+ls -ld /mnt/nfs/webhook_jobs
+
+# Limpa sujeira
+sudo rm -f /mnt/nfs/webhook_jobs/perm_test.*
+```
+
+
 
 
 
