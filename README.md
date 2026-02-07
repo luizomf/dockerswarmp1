@@ -7,9 +7,9 @@ feito via webhook.
 
 ## Docs importantes
 
-- `DEV_GUIDE.md`: bootstrap e hardening basico das VPS (SSH/UFW/fail2ban/WireGuard/NFS).
-- `docs/VPS_BOOTSTRAP.md`: como rodar `scripts/vps_bootstrap` e validar hardening.
-- `docs/REBUILD_MANUAL.md`: runbook (video-ready) para refazer o cluster e dar deploy com seguranca.
+- Se seu objetivo é repetir o vídeo do zero (tutorial longo + contexto): `DEV_GUIDE.md`
+- Se seu objetivo é bootstrap/hardening de VPS via script (mais idempotente + checklist): `docs/VPS_BOOTSTRAP.md`
+- Se seu objetivo é rebuild/deploy do cluster (runbook video-ready + manutenção segura): `docs/REBUILD_MANUAL.md`
 - `docs/SECURITY_REVIEW.md`: review de segurança (baseline + trade-offs).
 - `docs/VIDEO_OUTLINE.md`: outline do video.
 - `docs/VIDEO_SCRIPT.md`: roteiro detalhado (SHOW/SAY/CMD).
