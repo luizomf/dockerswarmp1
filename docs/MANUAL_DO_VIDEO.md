@@ -181,5 +181,61 @@ su $YOUR_USERNAME
 
 > **Verificação:** Após rodar `su $YOUR_USERNAME`, tente rodar `docker ps`. Se funcionar sem erro de permissão, o grupo `docker` foi aplicado corretamente. Se pedir senha no `sudo`, está correto.
 
+## 5. Configuração SSH (Chaves e Acesso Fácil)
+
+Agora vamos configurar o acesso seguro e prático a partir do **SEU COMPUTADOR**. Isso elimina a necessidade de digitar senhas e IPs o tempo todo.
+
+**1. Gerar par de chaves SSH (no seu PC):**
+Se você ainda não tem uma chave específica para este projeto:
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/id_hostinger -C "luizotavio"
+```
+
+**2. Enviar a chave pública para as VPSs:**
+Isso autoriza sua chave a entrar nos servidores. Repita para cada IP ou domínio configurado.
+```bash
+ssh-copy-id -i ~/.ssh/id_hostinger.pub luizotavio@inprod.cloud
+ssh-copy-id -i ~/.ssh/id_hostinger.pub luizotavio@otaviomiranda.cloud
+ssh-copy-id -i ~/.ssh/id_hostinger.pub luizotavio@myswarm.cloud
+```
+
+**3. Criar "apelidos" no `~/.ssh/config` (no seu PC):**
+Para não precisar digitar `ssh luizotavio@inprod.cloud` toda hora, vamos criar atalhos (`ssh kvm2`).
+
+Edite ou crie o arquivo `~/.ssh/config`:
+```text
+Host kvm2
+  IgnoreUnknown AddKeysToAgent,UseKeychain
+  AddKeysToAgent yes
+  HostName inprod.cloud
+  User luizotavio
+  Port 22
+  IdentityFile ~/.ssh/id_hostinger
+
+Host kvm4
+  IgnoreUnknown AddKeysToAgent,UseKeychain
+  AddKeysToAgent yes
+  HostName otaviomiranda.cloud
+  User luizotavio
+  Port 22
+  IdentityFile ~/.ssh/id_hostinger
+
+Host kvm8
+  IgnoreUnknown AddKeysToAgent,UseKeychain
+  AddKeysToAgent yes
+  HostName myswarm.cloud
+  User luizotavio
+  Port 22
+  IdentityFile ~/.ssh/id_hostinger
+```
+
+**Teste:**
+Agora basta digitar:
+```bash
+ssh kvm2
+```
+Se conectar direto, está tudo pronto!
+
+
 
 
