@@ -61,6 +61,7 @@ All notable changes to this project are documented here. This file records
 - Routed Traefik backend traffic through the internal overlay network (app services no longer attach to the public overlay)
 - Fixed Traefik Swarm provider flag spelling (avoid runtime "unknown flag" errors)
 - Redesigned the frontend landing page (Hostinger coupon CTA, architecture overview, quick test commands)
+- Expanded the rebuild manual with a video-ready runbook (clone, .env, GHCR auth, secrets, deploy, validation, watcher)
 
 ## 2026-02-05
 

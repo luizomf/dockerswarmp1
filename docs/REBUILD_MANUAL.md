@@ -329,9 +329,116 @@ just swarm-label-kvm8
 
 ## Secrets, GHCR e deploy
 
-Tudo isso esta no `DEV_GUIDE.md` e `README.md`. Ordem recomendada:
+Objetivo: deixar o deploy "rodavel" sem sair deste arquivo.
 
-1. `docker login ghcr.io ...`
-2. criar secrets (`github_webhook_secret`, `postgres_password`)
-3. `just stack-deploy`
-4. watcher (`just watcher-install`)
+Ordem recomendada (no `kvm8`):
+
+1. preparar `.env`
+2. login no GHCR
+3. criar secrets no Swarm
+4. deploy do stack
+5. validacao (curl + logs)
+6. watcher (auto deploy)
+
+### 1) Preparar `.env` (kvm8)
+
+No `kvm8`:
+
+```bash
+cd /opt/dockerswarmp1
+cp .env.example .env
+vim .env
+```
+
+Preencha (nao cole no repo):
+
+- `EMAIL`
+- `APP_DOMAIN` (ex: `app.myswarm.cloud`)
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+- `GITHUB_WEBHOOK_SECRET`
+
+Opcional:
+
+- `VISIT_SALT` (fallback para gerar o hash anonimo de visitas)
+
+### 2) Login no GHCR (kvm8)
+
+No minimo, faca login no `kvm8` e use `--with-registry-auth` no deploy.
+
+Interactive:
+
+```bash
+docker login ghcr.io
+```
+
+Ou via PAT (melhor para gravar):
+
+```bash
+echo "$GHCR_PAT" | docker login ghcr.io -u "$GITHUB_USER" --password-stdin
+```
+
+### 3) Criar secrets no Swarm (kvm8)
+
+No `kvm8`:
+
+```bash
+cd /opt/dockerswarmp1
+. .env
+
+printf '%s' "$GITHUB_WEBHOOK_SECRET" | docker secret create github_webhook_secret -
+printf '%s' "$POSTGRES_PASSWORD" | docker secret create postgres_password -
+```
+
+Validar:
+
+```bash
+docker secret ls
+```
+
+### 4) Deploy do stack (kvm8)
+
+No `kvm8`:
+
+```bash
+cd /opt/dockerswarmp1
+just stack-deploy
+```
+
+Validar:
+
+```bash
+docker stack services dockerswarmp1
+docker stack ps dockerswarmp1
+```
+
+### 5) Validacao rapida (kvm8 / sua maquina)
+
+```bash
+curl -fsS "https://app.myswarm.cloud/" | head -n 5
+curl -fsS "https://app.myswarm.cloud/api/visit"
+```
+
+Se a API nao subir, veja logs:
+
+```bash
+cd /opt/dockerswarmp1
+just stack-logs api
+just stack-logs postgres
+just stack-logs traefik
+```
+
+### 6) Watcher (auto deploy) no `kvm8`
+
+No `kvm8`:
+
+```bash
+cd /opt/dockerswarmp1
+just watcher-install
+just watcher-logs
+```
+
+Se der `Permission denied` no `rm` da fila em `/mnt/nfs/webhook_jobs`:
+
+- confirme que o NFS esta com `root:app` + `2770` + ACL default
+- confirme que o user do watcher (ex: `luizotavio`) esta no grupo `app`
+- depois de `usermod -aG app ...`, faca relogin ou `newgrp app`
