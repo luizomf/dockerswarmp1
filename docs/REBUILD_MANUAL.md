@@ -4,11 +4,13 @@ Este manual e para quando voce vai refazer as VPS do zero e quer uma ordem
 segura e reproduzivel. Ele complementa (e nao substitui) `DEV_GUIDE.md`.
 
 Objetivo:
+
 - refazer um cluster Swarm pequeno (3 VPS) sem se trancar fora
 - evitar downtime desnecessario
 - manter o processo "gravavel" para o video
 
 Escopo:
+
 - baseline com 3 VPS (kvm2, kvm4, kvm8)
 - todos os nos como managers (na demo)
 - `kvm8` e o edge publico e hospeda NFS/Postgres
@@ -17,9 +19,10 @@ Escopo:
 
 - Formate `kvm2` e `kvm4` primeiro. Deixe o `kvm8` por ultimo.
 - Remova **um no por vez** do Swarm.
-- Se voce remover `kvm4` e `kvm2`, voce fica com **1 manager** (`kvm8`).
-  Isso e OK por pouco tempo (durante a formatacao), mas voce perde tolerancia a falhas.
-- Se precisar "forcar" remocao de node, faca isso consciente: `docker node rm --force`.
+- Se voce remover `kvm4` e `kvm2`, voce fica com **1 manager** (`kvm8`). Isso e
+  OK por pouco tempo (durante a formatacao), mas voce perde tolerancia a falhas.
+- Se precisar "forcar" remocao de node, faca isso consciente:
+  `docker node rm --force`.
 
 ## Checklist pre-format (na sua maquina, fora das VPS)
 
@@ -179,35 +182,98 @@ docker info | grep -n "Swarm:"
 Para detalhes e comandos: veja `DEV_GUIDE.md`.
 
 Checklist rapido:
+
 - SSH por chave (evitar lockout)
 - UFW: liberar SSH do seu IP antes de `ufw enable`
 - fail2ban habilitado
 - Docker instalado e funcionando
 - WireGuard funcionando (todos pingam `10.100.0.x`)
 
+## NFS (webhook_jobs) antes do deploy
+
+O stack usa `/mnt/nfs/webhook_jobs` (bind mount) para a fila do webhook ser
+compartilhada entre os nos. Antes de fazer `stack-deploy`, garanta que:
+
+- o NFS server esta exportando no `kvm8`
+- todos os nos montam NFS em `/mnt/nfs`
+- `/mnt/nfs/webhook_jobs` existe e e gravavel
+
+Para detalhes, veja a secao de NFS no `DEV_GUIDE.md`. Resumo rapido:
+
+Server (`kvm8`):
+
+```bash
+sudo apt-get install -y nfs-kernel-server
+sudo mkdir -p /srv/nfs/swarm_data/webhook_jobs
+
+# Permissoes (uid/gid 1011)
+sudo groupadd -g 1011 app || true
+sudo usermod -aG app "$USER" || true
+sudo chown -R root:app /srv/nfs/swarm_data/webhook_jobs
+sudo chmod 2770 /srv/nfs/swarm_data/webhook_jobs
+sudo setfacl -R -m g:app:rwx /srv/nfs/swarm_data/webhook_jobs
+sudo setfacl -R -m d:g:app:rwx /srv/nfs/swarm_data/webhook_jobs
+
+EXPORT_LINE="/srv/nfs/swarm_data 10.100.0.0/24(rw,sync,no_subtree_check,fsid=0,no_root_squash)"
+sudo grep -qF "$EXPORT_LINE" /etc/exports || echo "$EXPORT_LINE" | sudo tee -a /etc/exports
+sudo exportfs -ra
+```
+
+Clients (kvm2/kvm4/kvm8):
+
+```bash
+sudo apt-get install -y nfs-common
+sudo mkdir -p /mnt/nfs
+
+# Alinhar grupo usado pelos containers (somente necessario se voce for mexer
+# nesses arquivos pelo host).
+sudo groupadd -g 1011 app || true
+sudo usermod -aG app "$USER" || true
+```
+
+`/etc/fstab` (mais resiliente no boot):
+
+```text
+10.100.0.8:/ /mnt/nfs nfs4 rw,vers=4.2,_netdev,noatime,nofail,x-systemd.automount,x-systemd.idle-timeout=600,x-systemd.device-timeout=10s,x-systemd.mount-timeout=30s,x-systemd.requires=wg-quick@wg0.service 0 0
+```
+
+Montar e validar:
+
+```bash
+sudo mount -a
+findmnt /mnt/nfs
+mktemp -p /mnt/nfs/webhook_jobs perm_test.XXXXXX
+```
+
 ## Nota importante: aperte o UFW depois do WireGuard
 
 Para este projeto, Swarm e NFS devem trafegar pelo WireGuard, nao pela internet.
 
 O que procurar:
-- Se `ufw status` mostrar regras do tipo "allow from <IP publico do node> to port 2377/7946/4789/2049",
-  isso significa que voce esta permitindo Swarm/NFS via internet (mesmo que o edge firewall filtre).
+
+- Se `ufw status` mostrar regras do tipo "allow from <IP publico do node> to
+  port 2377/7946/4789/2049", isso significa que voce esta permitindo Swarm/NFS
+  via internet (mesmo que o edge firewall filtre).
 
 Baseline recomendado:
+
 - manter `22/tcp` apenas do seu IP
 - manter `51820/udp` aberto
 - permitir Swarm/NFS somente `in on wg0 from 10.100.0.0/24`
 - no `kvm8`, abrir `80/443` para Traefik
 
 Proximo ajuste (quando o WireGuard estiver 100% ok):
-- se hoje voce ainda tem regras de Swarm/NFS liberadas por IP publico, aperte o UFW
-  para permitir essas portas apenas via `wg0` (e manter o resto fechado). Eu so faria
-  isso quando voce disser "pode apertar agora", porque e a hora que mais da lockout
-  se uma regra estiver errada.
+
+- se hoje voce ainda tem regras de Swarm/NFS liberadas por IP publico, aperte o
+  UFW para permitir essas portas apenas via `wg0` (e manter o resto fechado). Eu
+  so faria isso quando voce disser "pode apertar agora", porque e a hora que
+  mais da lockout se uma regra estiver errada.
 
 Se voce quiser ajustar rapido (com cuidado para nao se trancar fora):
+
 1. garanta que existe uma regra para seu SSH (seu IP) antes de mexer no resto
-2. `sudo ufw reset` e reaplique as regras do `DEV_GUIDE.md` / `scripts/vps_bootstrap`
+2. `sudo ufw reset` e reaplique as regras do `DEV_GUIDE.md` /
+   `scripts/vps_bootstrap`
 
 Para uma migracao "incremental" (sem reset), veja o passo-a-passo em
 `docs/VPS_BOOTSTRAP.md` ("Apertar UFW (migracao para wg0-only)").
@@ -224,6 +290,23 @@ Nos outros (como manager):
 
 ```bash
 docker swarm join --token <TOKEN> 10.100.0.8:2377
+```
+
+## Baixar o repositorio (kvm8)
+
+O repositorio precisa existir no `kvm8` antes de usar `just`.
+
+```bash
+sudo mkdir -p /opt/dockerswarmp1
+sudo chown -R "$USER:$USER" /opt/dockerswarmp1
+
+git clone git@github.com:luizomf/dockerswarmp1.git /opt/dockerswarmp1
+```
+
+Se voce nao usa SSH no GitHub, troque por HTTPS:
+
+```bash
+git clone https://github.com/luizomf/dockerswarmp1.git /opt/dockerswarmp1
 ```
 
 No repositorio (no `kvm8`):
