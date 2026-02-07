@@ -440,6 +440,8 @@ sudo ufw default deny incoming
 sudo ufw default allow outgoing
 
 # Libera SEU acesso SSH e WireGuard (UDP)
+# DICA: Se seu IP não é fixo, libere para "Any" no SSH e confie nas chaves + Fail2Ban
+# sudo ufw allow ssh comment "SSH Public"
 sudo ufw allow from "$ADMIN_SSH_CIDR" to any port 22 proto tcp comment "SSH Admin"
 sudo ufw allow from "$ADMIN_SSH_CIDR" to any port 51820 proto udp comment "WireGuard Admin"
 
