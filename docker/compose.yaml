@@ -32,8 +32,6 @@ services:
       - internal
 
   api:
-    container_name: api
-    hostname: api
     image: dockerswarmp1-api:local
     pull_policy: never
     build:
