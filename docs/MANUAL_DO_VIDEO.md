@@ -283,6 +283,29 @@ python3-dev acl build-essential tree just
 sudo timedatectl set-timezone "$TIMEZONE"
 ```
 
+## 8. Configuração do Git
+
+Como vamos clonar o repositório e talvez fazer ajustes rápidos, configuramos o Git com nossa identidade.
+
+**Execute em TODAS as VPSs:**
+
+```bash
+# Ajuste com seus dados
+export GIT_USERNAME="luizomf"
+export GIT_EMAIL="luizomf@gmail.com"
+
+git config --global user.name "$GIT_USERNAME"
+git config --global user.email "$GIT_EMAIL"
+
+# Padronização de quebra de linha (Linux style - LF)
+git config --global core.autocrlf input
+git config --global core.eol lf
+
+# Branch padrão moderna
+git config --global init.defaultbranch main
+```
+
+
 
 
 
