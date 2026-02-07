@@ -470,6 +470,30 @@ sudo ufw --force enable
 sudo ufw status verbose
 ```
 
+## 12. Teste Rápido de Firewall (HTTP)
+
+Vamos subir um servidor web temporário em cada máquina para provar que nossas regras de firewall funcionam.
+
+**Execute em todos os nós (`kvm2`, `kvm4`, `kvm8`):**
+
+```bash
+mkdir test 
+echo "<div style='display: grid; place-items: center; font-size: 5vw; height: 100vh;'>HELLO FROM $(hostname)</div>" > test/index.html
+sudo python3 -m http.server -d test 80
+```
+
+**Resultado esperado:**
+1. Abra `http://myswarm.cloud` (ou IP do `kvm8`) no navegador -> **FUNCIONA** (Você vê "HELLO FROM kvm8").
+2. Abra `http://inprod.cloud` (ou IP do `kvm2`) -> **FALHA** (Timeout/Recusado).
+3. Abra `http://otaviomiranda.cloud` (ou IP do `kvm4`) -> **FALHA** (Timeout/Recusado).
+
+**Para parar:**
+Pressione `Ctrl+C` no terminal e remova a pasta de teste:
+```bash
+rm -r test
+```
+
+
 
 
 
