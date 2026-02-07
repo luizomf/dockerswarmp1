@@ -19,6 +19,8 @@ Escopo:
 
 - Formate `kvm2` e `kvm4` primeiro. Deixe o `kvm8` por ultimo.
 - Remova **um no por vez** do Swarm.
+- Drenar ou reiniciar o `kvm8` derruba o app (Traefik + Postgres + NFS estao
+  fixos nele). Planeje janela e avise no video.
 - Se voce remover `kvm4` e `kvm2`, voce fica com **1 manager** (`kvm8`). Isso e
   OK por pouco tempo (durante a formatacao), mas voce perde tolerancia a falhas.
 - Se precisar "forcar" remocao de node, faca isso consciente:
