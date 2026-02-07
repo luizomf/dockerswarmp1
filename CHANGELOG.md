@@ -41,6 +41,7 @@ All notable changes to this project are documented here. This file records
 - Refined the video hook to delay tradeoffs and added Mermaid diagrams (runtime + deploy)
 - Reworked the first 60 seconds into high-tempo beats and added Traefik pronunciation note
 - Added a full local Docker Compose dev stack (Traefik + API + frontend + Postgres)
+- Simplified Justfile recipes (kept only essential Compose/Swarm/watcher commands)
 
 ## 2026-02-05
 
