@@ -236,6 +236,29 @@ ssh kvm2
 ```
 Se conectar direto, está tudo pronto!
 
+## 6. Sudo sem Senha (Opcional/Demo)
+
+Para agilizar o desenvolvimento e evitar digitar a senha de `sudo` repetidamente durante o vídeo/configuração, vamos configurar o `NOPASSWD`.
+
+> **⚠️ ALERTA DE SEGURANÇA:**
+> Em ambientes de produção críticos, isso **não é recomendado**. Se um atacante ganhar acesso ao seu usuário, ele ganha acesso `root` instantaneamente sem barreiras. Faça isso apenas se entender o risco ou para ambientes de laboratório/demo.
+
+**Em cada VPS:**
+
+```bash
+# Cria/edita um arquivo específico para seu usuário no sudoers.d
+sudo visudo -f /etc/sudoers.d/luizotavio
+```
+
+Adicione a linha abaixo (trocando `luizotavio` pelo seu usuário):
+
+```text
+luizotavio ALL=(ALL) NOPASSWD: ALL
+```
+
+Salve e saia. Agora comandos como `sudo apt update` rodarão direto.
+
+
 
 
 
