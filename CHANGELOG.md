@@ -45,6 +45,7 @@ All notable changes to this project are documented here. This file records
 - Added a guardrail prompt for Gemini second opinions (no tools / no repo touch)
 - Added a rebuild manual covering safe node removal and full cluster rebuild order
 - Expanded rebuild manual with the kvm8 (last node) shutdown/leave sequence before formatting
+- Hardened VPS bootstrap script/docs (safer SSH restart, optional NOPASSWD sudo, WireGuard-only Swarm ports)
 
 ## 2026-02-05
 

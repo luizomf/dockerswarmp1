@@ -1,0 +1,311 @@
+#!/usr/bin/env bash
+
+###############################################################################
+### VPS BOOTSTRAP #############################################################
+###############################################################################
+
+set -Eeuo pipefail
+
+###############################################################################
+### CONFIG VARIABLES ##########################################################
+###############################################################################
+
+# For booleans use zero or one
+# 0 = False / false / No
+# 1 = True  / true  / Yes
+
+CURRENT_USER="$(whoami)"
+SET_BASH_VIM_MODE=1
+TIMEZONE='America/Sao_Paulo'
+
+GIT_USERNAME="luizomf"
+GIT_EMAIL="luizomf@gmail.com"
+
+ADMIN_SSH_CIDR="${ADMIN_SSH_CIDR:-187.108.118.25/32}"
+WG_CIDR="${WG_CIDR:-10.100.0.0/24}"
+WG_INTERFACE="${WG_INTERFACE:-wg0}"
+
+# For booleans use 0/1
+ENABLE_NOPASSWD_SUDO="${ENABLE_NOPASSWD_SUDO:-0}"
+INSTALL_SHELL_SETUP="${INSTALL_SHELL_SETUP:-1}"
+IS_EDGE_NODE="${IS_EDGE_NODE:-0}"
+
+FAIL2BAN_IGNOREIP="${FAIL2BAN_IGNOREIP:-$ADMIN_SSH_CIDR 127.0.0.1/8 ::1}"
+
+###############################################################################
+### INSTALL COMMON PACKAGES ###################################################
+###############################################################################
+
+sudo apt update -y
+sudo apt upgrade -y
+
+sudo apt install -y vim curl ca-certificates htop python3 \
+python3-dev acl build-essential tree just
+
+# Timezone list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+sudo timedatectl set-timezone "$TIMEZONE"
+
+###############################################################################
+### USER CONFIGS ##############################################################
+###############################################################################
+
+# Ensure we don't harden SSH before we have key-based access.
+authorized_keys_path="/home/${CURRENT_USER}/.ssh/authorized_keys"
+if [[ ! -s "$authorized_keys_path" ]]; then
+  cat <<EOF
+ERROR: ${authorized_keys_path} is missing or empty.
+
+Copy your SSH public key first (to avoid lockout), then rerun:
+  ssh-copy-id -i <your_key>.pub ${CURRENT_USER}@<server>
+
+If you know what you're doing and still want to continue, set:
+  REQUIRE_AUTHORIZED_KEYS=0
+EOF
+  if [[ "${REQUIRE_AUTHORIZED_KEYS:-1}" -ne 0 ]]; then
+    exit 1
+  fi
+fi
+
+# Optionally enable passwordless sudo for convenience during bootstrap.
+# Keep it OFF by default. If you enable it, remove it after you're done:
+# - set ENABLE_NOPASSWD_SUDO=0 and rerun, or
+# - delete /etc/sudoers.d/<user>
+sudo usermod -aG sudo "$CURRENT_USER"
+
+sudoers_file="/etc/sudoers.d/${CURRENT_USER}"
+if [[ "$ENABLE_NOPASSWD_SUDO" -eq 1 ]]; then
+  tmp_sudoers="$(mktemp)"
+  printf '%s ALL=(ALL) NOPASSWD: ALL\n' "$CURRENT_USER" > "$tmp_sudoers"
+  sudo visudo -cf "$tmp_sudoers"
+  sudo install -m 0440 -o root -g root "$tmp_sudoers" "$sudoers_file"
+  rm -f "$tmp_sudoers"
+else
+  sudo rm -f "$sudoers_file" || true
+fi
+
+# Adds the current user to docker group
+if getent group docker >/dev/null 2>&1; then
+  if ! id -nG "$CURRENT_USER" | tr ' ' '\n' | grep -qx docker; then
+    sudo usermod -aG docker "$CURRENT_USER"
+  fi
+fi
+
+# Source .bashrc to avoid reconfiguration
+# shellcheck disable=SC1090
+. ~/.bashrc
+# shellcheck disable=SC1090
+[[ -f ~/.profile ]] && . ~/.profile
+
+# Set bash vim mode
+if [[ -z "${__SETUP_LOADED__:-}" && $SET_BASH_VIM_MODE -eq 1 && "$INSTALL_SHELL_SETUP" -eq 1 ]]; then
+  echo "export __SETUP_LOADED__=1" >> ".profile"
+  curl -fsSl https://gist.githubusercontent.com/luizomf/9a52ba5b7b43aa69cc9a7121795bb9fa/raw/30d935ffe0eeb8e191b3bb98582edcd8d074e378/bash_minimal_setup >> ~/.bashrc
+  curl -fsSl https://gist.githubusercontent.com/luizomf/9a52ba5b7b43aa69cc9a7121795bb9fa/raw/8db0fd8032a412c95fe7f127b939317dc0f38c0e/.vimrc > ~/.vimrc
+
+  if ! readlink -f /etc/alternatives/editor | grep -q vim.basic; then
+    sudo update-alternatives --set editor /usr/bin/vim.basic
+  fi
+
+  # shellcheck disable=SC1090
+  . ~/.bashrc
+fi
+
+###############################################################################
+### SSH HARDENING #############################################################
+###############################################################################
+
+# Install openssh server if not installed
+sudo apt install -y openssh-server
+
+cat <<-'EOF' | sudo tee "/etc/ssh/sshd_config.d/01_sshd_settings.conf"
+###############################################################################
+### Start of /etc/ssh/sshd_config.d/01_sshd_settings.conf ######################
+###############################################################################
+
+# BLOCK 1: AUTHENTICATION AND ACCESS (HARDENING)
+# Focus: Eliminate insecure methods and ensure key-based access only.
+
+PubkeyAuthentication yes            # Enable public key authentication
+PasswordAuthentication no           # Disable passwords (immune to brute force)
+KbdInteractiveAuthentication no     # Disable keyboard-interactive auth
+ChallengeResponseAuthentication no  # Disable generic challenge-response auth
+PermitRootLogin no                  # Disallow root login (golden rule)
+PermitEmptyPasswords no             # Disallow empty passwords
+UsePAM yes                          # Keep PAM on for account/session controls (keys-only still enforced)
+AuthenticationMethods publickey     # Enforce exclusive use of public keys
+
+# BLOCK 2: ATTACK SURFACE REDUCTION (CONNECTIVITY)
+# Focus: Disable tunnels and network features commonly used for pivoting.
+
+PermitUserEnvironment no            # Prevent env injection via ~/.ssh/environment
+PermitUserRC no                     # Disable execution of ~/.ssh/rc on login
+X11Forwarding no                    # Disable remote X11 forwarding
+
+# TUNNELING AND FORWARDING
+# WARNING: Set to 'yes' if you use SOCKS proxy (-D) or TCP tunnels.
+AllowTcpForwarding no
+
+# WARNING: Required for Docker Context over SSH.
+# When set to 'no', Docker CLI cannot access the remote docker.sock.
+AllowStreamLocalForwarding no
+
+# WARNING: Set to 'yes' if you rely on SSH agent forwarding between hosts.
+AllowAgentForwarding no
+
+PermitOpen none                     # Block forwarding to arbitrary destinations (L4)
+PermitListen none                   # Prevent the server from opening remote ports
+GatewayPorts no                     # Block external access to reverse tunnels
+PermitTunnel no                     # Disable creation of virtual tunnel interfaces (tun/tap)
+
+# BLOCK 3: FINE-TUNING AND QUALITY OF LIFE
+# Focus: Session control and performance.
+
+MaxAuthTries 4                      # Max authentication attempts per connection
+LoginGraceTime 30                   # Time limit to complete login (seconds)
+ClientAliveInterval 300             # Check client activity every 5 minutes
+ClientAliveCountMax 2               # Disconnect after 2 unanswered checks
+PrintMotd no                        # Avoid duplicate MOTD messages
+UseDNS no                           # Disable reverse DNS (much faster logins)
+
+###############################################################################
+### End of /etc/ssh/sshd_config.d/01_sshd_settings.conf ########################
+###############################################################################
+EOF
+
+# Validate before restarting (avoid accidental lockout due to config typo).
+sudo sshd -t
+sudo systemctl restart ssh
+
+###############################################################################
+### Git #######################################################################
+###############################################################################
+
+git config --global user.name "$GIT_USERNAME"
+git config --global user.email "$GIT_EMAIL"
+git config --global core.autocrlf input
+git config --global core.eol lf
+git config --global init.defaultbranch main
+
+###############################################################################
+### Fail2Ban ##################################################################
+###############################################################################
+
+# Install
+sudo apt install fail2ban -y
+
+cat <<-EOF | sudo tee "/etc/fail2ban/jail.local"
+[DEFAULT]
+
+[sshd]
+enabled = true
+port = ssh
+backend = systemd
+ignoreip = ${FAIL2BAN_IGNOREIP}
+
+maxretry = 5
+findtime = 10m
+bantime = 1h
+
+bantime.increment = true
+bantime.factor = 2
+bantime.max = 24h
+EOF
+
+# Restarts
+sudo systemctl restart fail2ban
+
+###############################################################################
+### UFW Firewall ##############################################################
+###############################################################################
+
+sudo apt install -y ufw
+
+sudo ufw disable
+sudo ufw --force reset
+
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# SSH (admin IP only)
+sudo ufw allow from "$ADMIN_SSH_CIDR" to any port 22 proto tcp comment "SSH admin"
+
+# WireGuard (public interface, further restricted by edge firewall)
+sudo ufw allow 51820/udp comment "WireGuard"
+
+# Swarm + NFS over WireGuard only (recommended)
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 2377 proto tcp comment "Swarm control (wg)"
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 7946 proto tcp comment "Swarm gossip (wg)"
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 7946 proto udp comment "Swarm gossip (wg)"
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 4789 proto udp comment "Swarm vxlan (wg)"
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 2049 proto tcp comment "NFSv4 (wg)"
+
+if [[ "$IS_EDGE_NODE" -eq 1 ]]; then
+  sudo ufw allow 80/tcp comment "HTTP public"
+  sudo ufw allow 443/tcp comment "HTTPS public"
+fi
+
+# 🚨 BE SURE EVERYTHING IS RIGHT BEFORE RUNNING THIS LINE
+sudo ufw --force enable
+sudo ufw status verbose
+
+###############################################################################
+### VPN (WireGuard) ###########################################################
+###############################################################################
+
+# Simple network layout
+# 10.100.0.0/24
+# kvm2 -> 10.100.0.2
+# kvm4 -> 10.100.0.4
+# kvm8 -> 10.100.0.8
+
+sudo apt install -y wireguard
+
+# Generate private and public keys if it does not exist
+if [[ ! -f /etc/wireguard/private.key ]]; then
+  sudo wg genkey | sudo tee /etc/wireguard/private.key | sudo wg pubkey | sudo tee /etc/wireguard/public.key
+fi
+
+cat <<-EOF | sudo tee "/etc/wireguard/wg0.conf"
+#[Interface]
+#Address = 10.100.0.8/24 # The internal IP of this VPS
+#ListenPort = 51820 # The port
+#PrivateKey = THIS_VPS_PRIVATE_KEY # The private key of this VPS
+
+#[Peer]
+#PublicKey = PEER_PUBLIC_KEY # The public key of the other VPS
+#AllowedIPs = 10.100.0.4/32 # The internal IP Addres of the other VPS
+#Endpoint = PEER_PUBLIC_IP_ADDRESS:51820 # The public ip addres of the other VPS
+#PersistentKeepalive = 25
+EOF
+
+## Allow wireguard on ufw
+# sudo ufw allow from 76.13.71.178 to any port 51820 proto udp comment "WireGuard swarm"
+# sudo ufw allow from 191.101.70.130 to any port 51820 proto udp comment "WireGuard swarm"
+# sudo ufw allow from 89.116.73.152 to any port 51820 proto udp comment "WireGuard swarm"
+# sudo ufw allow from 187.108.118.25 to any port 51820 proto udp comment "WireGuard admin"
+
+## Enable wireguard
+#sudo systemctl enable wg-quick@wg0
+
+## Start wireguard
+#sudo systemctl start wg-quick@wg0
+
+## After configuring the wg0.conf, restart the service
+# sudo systemctl restart wg-quick@wg0
+
+# Check if all is ok
+# sudo wg show
+
+## 🚨 UNDO EVERYTHING IF NEEDED
+#sudo systemctl stop wg-quick@wg0
+#sudo systemctl disable wg-quick@wg0
+#sudo ip link delete wg0 2>/dev/null || true
+#sudo rm -rf /etc/wireguard
+#sudo apt purge -y wireguard
+#sudo apt autoremove -y
+#sudo apt install -y wireguard
+#sudo ufw delete allow 51820/udp
+
+###############################################################################
+### THE END ###################################################################
+###############################################################################
