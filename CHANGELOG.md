@@ -80,6 +80,7 @@ All notable changes to this project are documented here. This file records
 - Added a Just recipe to list API containers across kvm2/kvm4/kvm8 via SSH
 - Clarified VISIT_SALT behavior and fallback in .env.example
 - Ignored .env.* files (except .env.example) to prevent accidental local env commits
+- Summarized key security review highlights and trade-offs in README
 
 ## 2026-02-05
 

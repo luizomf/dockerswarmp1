@@ -8,6 +8,7 @@ feito via webhook.
 ## Docs importantes
 
 - `DEV_GUIDE.md`: bootstrap e hardening basico das VPS (SSH/UFW/fail2ban/WireGuard/NFS).
+- `docs/SECURITY_REVIEW.md`: review de segurança (baseline + trade-offs).
 - `docs/VIDEO_OUTLINE.md`: outline do video.
 - `docs/VIDEO_SCRIPT.md`: roteiro detalhado (SHOW/SAY/CMD).
 
@@ -18,6 +19,28 @@ feito via webhook.
 - Frontend e API ficam no mesmo domínio (`APP_DOMAIN`).
 - API responde em `/api`.
 - Webhook do GitHub aciona deploy via watcher + NFS.
+
+## Segurança (resumo)
+
+Este projeto é um baseline "production-ish demo": não é Netflix-grade, mas não
+é porta aberta. O review completo está em `docs/SECURITY_REVIEW.md`.
+
+Highlights do que foi feito:
+
+- Exposição pública: apenas Traefik publica `80/443`; API/frontend/Postgres não expõem portas publicamente pelo Swarm.
+- Rede: Traefik usa provider do Swarm com `exposedByDefault=false` e roteia o tráfego backend pela rede overlay `internal`.
+- Secrets: em produção, webhook secret e senha do Postgres vêm de Swarm secrets (`*_FILE`) e não ficam hardcoded no repo.
+- Webhook: valida assinatura do GitHub (HMAC SHA256 com compare constant-time) e só aceita push em `main`.
+- FastAPI docs/OpenAPI: desabilitados em produção.
+- Frontend: estático e sem injeção de HTML não confiável (usa `textContent`); Nginx com `server_tokens off` e headers básicos.
+
+Trade-offs e riscos residuais (pra quem for evoluir):
+
+- SPOF intencional: `kvm8` concentra Traefik + Postgres + NFS (drain/reboot = downtime no demo).
+- NFS de demo: o exemplo usa `no_root_squash` por conveniência. Em produção, prefira `root_squash` + mapeamento de UID/GID, ou evite NFS para qualquer fila que dispare deploy.
+- Watcher/deploy: precisa rodar Docker no host (docker group é root-equivalent). Trate como componente privilegiado e proteja webhook secret/CI.
+- `/api/visit`: endpoint público que escreve no Postgres. Sem rate-limit e sem retenção, pode crescer a tabela.
+- Identidade de "visitante": usa `X-Forwarded-For`. Garanta que só o proxy de borda define esse header (remova/ignore o valor vindo direto do cliente).
 
 ## Domínios e nós (do vídeo)
 
