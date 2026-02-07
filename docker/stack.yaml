@@ -16,8 +16,8 @@ services:
       - DOCKER_API_VERSION=1.53
     command:
       - --providers.swarm=true
-      - --providers.swarm.exposedbydefault=false
-      - --providers.swarm.network=public
+      - --providers.swarm.exposedByDefault=false
+      - --providers.swarm.network=internal
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
@@ -37,6 +37,7 @@ services:
       - traefik_letsencrypt:/letsencrypt
     networks:
       - public
+      - internal
     deploy:
       <<: *deploy_defaults
       update_config:
@@ -55,7 +56,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
     networks:
-      - public
       - internal
     volumes:
       - webhook_jobs:/app/webhook_jobs
@@ -78,7 +78,7 @@ services:
   frontend:
     image: ghcr.io/luizomf/dockerswarmp1-frontend:latest
     networks:
-      - public
+      - internal
     deploy:
       <<: *deploy_defaults
       replicas: 6

@@ -58,6 +58,7 @@ All notable changes to this project are documented here. This file records
 - Documented explicit ownership rules for PLAN.md (Codex) and docs/INBOX.md (user)
 - Fixed rebuild manual gaps (repo checkout under /opt and NFS setup before stack deploy)
 - Documented that group membership changes require relogin/newgrp (prevents NFS "permission denied" confusion)
+- Routed Traefik backend traffic through the internal overlay network (app services no longer attach to the public overlay)
 
 ## 2026-02-05
 
