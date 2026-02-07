@@ -43,6 +43,10 @@ You must strictly follow this cycle for every task. Do not skip steps.
 - Refer to `PLAN.md` for current objectives.
 - Use `docs/INBOX.md` as an ideas/backlog inbox. Only implement items after
   promoting them into `PLAN.md`.
+- Use a single-writer rule to avoid conflicts: each `docs/INBOX.md` item should
+  have an Owner + Files. Only the Owner edits those files; everyone else
+  contributes via suggestions/drafts. Treat Gemini strictly as a suggestion
+  engine, and integrate changes via Codex commits.
 - Refer to `CHANGELOG.md` for project history.
 - If a new architectural rule is established, explicitly ask to update
   `AGENTS.md`.

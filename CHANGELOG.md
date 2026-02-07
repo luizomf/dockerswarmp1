@@ -54,6 +54,7 @@ All notable changes to this project are documented here. This file records
 - Added concrete UFW migration commands to move Swarm/NFS rules from public IPs to wg0-only
 - Added an ideas inbox under docs/ to capture improvements without derailing PLAN.md
 - Documented the ideas inbox workflow in AGENTS.md
+- Extended the inbox workflow with Owner+Files to avoid conflicts and coordinate Gemini tasks
 
 ## 2026-02-05
 
