@@ -461,6 +461,12 @@ curl -fsS "https://app.myswarm.cloud/" | head -n 5
 curl -fsS "https://app.myswarm.cloud/api/visit"
 ```
 
+Teste externo (para simular outro IP e ver o contador subir):
+
+- rode um "website test" gratuito (ex: Lighthouse online, PageSpeed, etc.)
+- isso gera requests reais de outros IPs
+- depois recarregue a home e confira o numero de "Visitas Hoje (unicas)"
+
 Se a API nao subir, veja logs:
 
 ```bash
