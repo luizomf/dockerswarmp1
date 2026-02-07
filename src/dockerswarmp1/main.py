@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Annotated, Any
 
 import uvloop
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
+from psycopg import OperationalError
 from psycopg.conninfo import make_conninfo
 from psycopg_pool import ConnectionPool
 
@@ -118,6 +119,14 @@ def get_pool() -> ConnectionPool[Any]:
   return new_pool
 
 
+def reset_pool() -> None:
+  pool: ConnectionPool[Any] | None = getattr(app.state, "pool", None)
+  if pool is None:
+    return
+  pool.close()
+  app.state.pool = None
+
+
 def get_client_ip(request: Request) -> str:
   forwarded = request.headers.get("x-forwarded-for")
   if forwarded:
@@ -176,9 +185,22 @@ async def health_check() -> dict[str, str]:
 async def visit_counter(request: Request) -> dict[str, int | str]:
   visit_date = datetime.now(tz=UTC).date()
   visitor_hash = build_visit_hash(request, visit_date)
-  pool = await asyncio.to_thread(get_pool)
-  unique_visits = await asyncio.to_thread(record_visit, pool, visit_date, visitor_hash)
-  return {"date": visit_date.isoformat(), "unique_visits": unique_visits}
+  try:
+    pool = await asyncio.to_thread(get_pool)
+    unique_visits = await asyncio.to_thread(
+      record_visit, pool, visit_date, visitor_hash
+    )
+    return {"date": visit_date.isoformat(), "unique_visits": unique_visits}
+  except OperationalError:
+    await asyncio.to_thread(reset_pool)
+    try:
+      pool = await asyncio.to_thread(get_pool)
+      unique_visits = await asyncio.to_thread(
+        record_visit, pool, visit_date, visitor_hash
+      )
+      return {"date": visit_date.isoformat(), "unique_visits": unique_visits}
+    except OperationalError as exc:
+      raise HTTPException(status_code=503, detail="Database unavailable") from exc
 
 
 def verify_signature(body: bytes, signature_256: str | None) -> None:
