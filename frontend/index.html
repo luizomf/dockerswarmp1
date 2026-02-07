@@ -3,8 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>My Docker Swarm</title>
+    <title>Docker Swarm em 3 VPS (Produção)</title>
     <link rel="stylesheet" href="/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="icon"
       type="image/png"
@@ -12,37 +18,190 @@
     />
   </head>
   <body>
-    <div class="nebula"></div>
-    <div class="stars"></div>
-
-    <main class="panel">
-      <span class="tag">Swarm em produção</span>
-      <h1>Docker Swarm em 3 VPS</h1>
-      <p>
-        <span class="dot"></span>Cluster real com um KVM2, KVM4 e KVM8,
-        distribuindo a API e o frontend com Docker Swarm.
-      </p>
-      <p>
-        Traefik recebe no <code>:443</code> e roteia para a API em
-        <code>/api</code> e para o frontend no <code>8080</code>.
-      </p>
-      <div class="stat">
-        <span class="stat-label">Visitas Hoje (únicas)</span>
-        <span class="stat-value" id="visit-count">...</span>
+    <div class="bg-fixed">
+      <div class="nebula"></div>
+      <div class="stars-sm"></div>
+      <div class="stars-md"></div>
+      <div class="shooting-stars">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
-      <section class="grid">
-        <article class="card">
-          <b>Stack</b><br />Swarm + Traefik + FastAPI + Postgres + Nginx
-        </article>
-        <article class="card">
-          <b>Deploy</b><br /><code>just stack-deploy</code>
-        </article>
-        <article class="card">
-          <b>Auto deploy</b><br />GitHub Actions + webhook
-        </article>
+    </div>
+
+    <main class="container">
+      <!-- HERO -->
+      <section class="hero panel">
+        <span class="tag">Swarm em Produção</span>
+        <h1>Docker Swarm em <br />3 VPS (Produção de verdade)</h1>
+        <p class="subtitle">WireGuard + Traefik + GHCR + FastAPI + Postgres.</p>
+
+        <div class="actions">
+          <a href="#test" class="btn btn-primary">Testar a API agora</a>
+          <a href="#about" class="btn btn-secondary">Ver como foi feito</a>
+        </div>
       </section>
+
+      <!-- SPONSOR -->
+      <section class="hostinger-card">
+        <div class="sponsor-label">Patrocinado por Hostinger</div>
+        <div class="coupon-area">
+          <span class="coupon-text"
+            >CUPOM: <strong id="coupon-code">OTAVIOMIRANDA</strong></span
+          >
+          <button
+            class="btn-copy"
+            onclick="copyCoupon(this)"
+            aria-label="Copiar cupom"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path
+                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+              ></path>
+            </svg>
+            Copiar
+          </button>
+        </div>
+        <a
+          href="https://www.hostinger.com/otaviomiranda"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-hostinger"
+        >
+          Apoie o canal e pegue seu desconto
+        </a>
+        <p class="disclosure">
+          Link afiliado/patrocínio: ajuda a manter os vídeos no ar.
+        </p>
+      </section>
+
+      <!-- STATS -->
+      <section class="panel stats-panel">
+        <div class="stat-box">
+          <span class="stat-label">Visitas Hoje (únicas)</span>
+          <span class="stat-value" id="visit-count">...</span>
+        </div>
+      </section>
+
+      <!-- CONTENT GRID -->
+      <section id="about" class="grid">
+        <div class="card">
+          <h3>Infraestrutura</h3>
+          <p>
+            Cluster com KVM2, KVM4 e KVM8 interligados via
+            <strong>WireGuard</strong> (rede privada 10.100.0.0/24).
+          </p>
+        </div>
+        <div class="card">
+          <h3>Roteamento</h3>
+          <p>
+            <strong>Traefik</strong> (pronuncia: traffic) recebe tudo na porta
+            443 e distribui para os serviços.
+          </p>
+        </div>
+        <div class="card">
+          <h3>CI/CD & Imagens</h3>
+          <p>
+            Imagens buildadas no GitHub Actions e hospedadas no
+            <strong>GHCR</strong>. Deploy via Webhook.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Banco de Dados</h3>
+          <p>
+            <strong>Postgres 18</strong> rodando como serviço stateful, fixado
+            no nó mais robusto.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Backend</h3>
+          <p>
+            API em <strong>FastAPI</strong> escalável, servindo dados de acesso
+            em tempo real.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Frontend</h3>
+          <p>
+            Página estática servida por <strong>Nginx</strong>, ultra leve e
+            performática.
+          </p>
+        </div>
+      </section>
+
+      <!-- ARCHITECTURE -->
+      <section class="panel architecture">
+        <h2>Arquitetura Simplificada</h2>
+        <div class="diagram">
+          <div class="diagram-row">
+            <div class="box internet">Internet</div>
+          </div>
+          <div class="diagram-arrow">↓ :443</div>
+          <div class="diagram-row">
+            <div class="box traefik">Traefik (Load Balancer)</div>
+          </div>
+          <div class="diagram-arrow">↙ &nbsp; ↘</div>
+          <div class="diagram-row mixed">
+            <div class="box app">Frontend<br />(Nginx)</div>
+            <div class="box app">API<br />(FastAPI)</div>
+          </div>
+          <div class="diagram-arrow align-right">↓</div>
+          <div class="diagram-row align-right">
+            <div class="box db">Postgres<br />(Stateful)</div>
+          </div>
+          <p class="diagram-note">* Todos os nós conectados via WireGuard</p>
+        </div>
+      </section>
+
+      <!-- TEST -->
+      <section id="test" class="panel test-section">
+        <h2>Teste Rápido</h2>
+        <p>Execute no seu terminal para ver a API respondendo:</p>
+        <div class="code-block">
+          <code>curl -fsS https://app.myswarm.cloud/api/visit</code>
+          <button
+            class="btn-copy-code"
+            onclick="copyToClipboard('curl -fsS https://app.myswarm.cloud/api/visit', this)"
+          >
+            Copiar
+          </button>
+        </div>
+        <p>Ou acesse a home via curl:</p>
+        <div class="code-block">
+          <code>curl -fsS https://app.myswarm.cloud/</code>
+          <button
+            class="btn-copy-code"
+            onclick="copyToClipboard('curl -fsS https://app.myswarm.cloud/', this)"
+          >
+            Copiar
+          </button>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer>
+        <p>
+          <strong>Repo:</strong>
+          <span class="muted">(link na descrição do vídeo)</span>
+        </p>
+        <p>
+          <strong>Stack:</strong> Swarm • Traefik • FastAPI • Postgres • Nginx
+        </p>
+      </footer>
     </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
     <script>
+      // Stats Fetch
       fetch('/api/visit')
         .then(res => res.json())
         .then(data => {
@@ -51,7 +210,87 @@
             el.textContent = data.unique_visits.toString();
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          const el = document.getElementById('visit-count');
+          if (el) el.textContent = 'Offline';
+        });
+
+      function showToast(message) {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+
+        toast.textContent = message;
+        toast.classList.add('toast--show');
+        window.clearTimeout(toast.__timerId);
+        toast.__timerId = window.setTimeout(() => {
+          toast.classList.remove('toast--show');
+        }, 1800);
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text);
+        }
+
+        return new Promise((resolve, reject) => {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', 'true');
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            ta.style.top = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            ok ? resolve() : reject(new Error('copy failed'));
+          } catch (err) {
+            reject(err);
+          }
+        });
+      }
+
+      function markCopied(button) {
+        if (!button) return;
+        const oldText = button.textContent;
+        button.textContent = 'Copiado!';
+        button.disabled = true;
+        window.setTimeout(() => {
+          button.textContent = oldText;
+          button.disabled = false;
+        }, 1200);
+      }
+
+      // Coupon Copy
+      function copyCoupon(button) {
+        const couponEl = document.getElementById('coupon-code');
+        const coupon = couponEl ? couponEl.innerText : 'OTAVIOMIRANDA';
+
+        copyText(coupon)
+          .then(() => {
+            markCopied(button);
+            showToast(`Cupom copiado: ${coupon}`);
+          })
+          .catch(() => {
+            showToast('Nao foi possivel copiar automaticamente.');
+            prompt('Copie o cupom manualmente:', coupon);
+          });
+      }
+
+      // Generic Copy
+      function copyToClipboard(text, button) {
+        copyText(text)
+          .then(() => {
+            markCopied(button);
+            showToast('Comando copiado!');
+          })
+          .catch(() => {
+            showToast('Nao foi possivel copiar automaticamente.');
+            prompt('Copie o texto manualmente:', text);
+          });
+      }
     </script>
   </body>
 </html>
