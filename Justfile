@@ -28,6 +28,9 @@ upd *ARGS:
 upb *ARGS:
   just compose up -d --build --remove-orphans {{ ARGS }}
 
+upb-scale-api COUNT="3":
+  just compose up -d --build --remove-orphans --scale api={{ COUNT }}
+
 down *ARGS:
   just compose down {{ ARGS }}
 
@@ -85,4 +88,3 @@ watcher-uninstall:
   sudo systemctl disable --now webhook-watcher
   sudo rm -f /etc/systemd/system/webhook-watcher.service
   sudo systemctl daemon-reload
-

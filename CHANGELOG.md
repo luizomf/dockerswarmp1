@@ -75,6 +75,7 @@ All notable changes to this project are documented here. This file records
 - Documented that docker stack deploy does not read .env (use just or export vars first)
 - Added an external test note for validating visit counts with third-party site checks
 - Allowed unique container hostnames in local Compose by removing fixed API hostname/container_name
+- Added a Just recipe to scale the API service locally for hostname demo
 
 ## 2026-02-05
 
