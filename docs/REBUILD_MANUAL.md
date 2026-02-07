@@ -359,6 +359,42 @@ Ordem recomendada (no `kvm8`):
 5. Validação (curl + logs)
 6. watcher (auto deploy)
 
+## (Extra) Rotacao de logs do Docker (recomendado)
+
+Por padrao, o Docker guarda logs em `/var/lib/docker/containers/*/*-json.log`
+e isso cresce sem limite. Em producao e normal **rotacionar** esses arquivos.
+
+Isso e configuracao **no host** (VPS), nao no container. Aplique em **todos**
+os nos (kvm2, kvm4, kvm8).
+
+Crie ou edite `/etc/docker/daemon.json`:
+
+```json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+```
+
+Reinicie o Docker:
+
+```bash
+sudo systemctl restart docker
+sudo systemctl is-active docker
+```
+
+Opcional: zerar o historico atual (para iniciar o video limpo):
+
+```bash
+sudo find /var/lib/docker/containers -name "*-json.log" -type f -print -exec truncate -s 0 {} \;
+```
+
+Obs: isso apaga o historico existente. Depois disso, os logs novos voltam a
+aparecer normalmente.
+
 Os secrets do docker swarm para essa aplicação são: `github_webhook_secret` e
 `postgres_password`.
 

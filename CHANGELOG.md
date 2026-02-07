@@ -55,6 +55,7 @@ All notable changes to this project are documented here. This file records
 - Bound the local Traefik dashboard port to 127.0.0.1 in Compose (avoid accidental LAN exposure)
 - Added safety checks to the deploy watcher to avoid dangerous deletes if misconfigured
 - Added a retry path for transient Postgres disconnects on /api/visit
+- Documented Docker log rotation and log reset commands in the rebuild manual
 - Documented the "tighten UFW to wg0-only" follow-up step for existing VPS rules
 - Added concrete UFW migration commands to move Swarm/NFS rules from public IPs to wg0-only
 - Added an ideas inbox under docs/ to capture improvements without derailing PLAN.md
