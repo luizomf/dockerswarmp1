@@ -155,4 +155,31 @@ A política adotada é **Whitelist**: Bloqueia tudo (Drop) e libera apenas o nec
 
 > **Importante:** Essa configuração protege a borda. Ainda assim, configuraremos o `UFW` (firewall local) mais adiante para defesa em profundidade e controle da VPN.
 
+## 4. Criação do Usuário e Docker
+
+Ainda logado como `root` (via Terminal web ou SSH), vamos criar o usuário de trabalho e garantir que ele tenha acesso ao Docker e poderes administrativos.
+
+**Execute em TODAS as VPSs (`kvm2`, `kvm4`, `kvm8`):**
+
+```bash
+# Defina o nome do seu usuário
+export YOUR_USERNAME="luizotavio"
+
+# Cria o usuário com diretório home (-m) e shell bash (-s)
+useradd -m -s /bin/bash $YOUR_USERNAME
+
+# Adiciona ao grupo 'sudo' (admin) e 'docker' (para rodar docker sem sudo)
+usermod -aG sudo $YOUR_USERNAME
+usermod -aG docker $YOUR_USERNAME
+
+# Define a senha do usuário
+passwd $YOUR_USERNAME
+
+# Teste o acesso mudando para o novo usuário
+su $YOUR_USERNAME
+```
+
+> **Verificação:** Após rodar `su $YOUR_USERNAME`, tente rodar `docker ps`. Se funcionar sem erro de permissão, o grupo `docker` foi aplicado corretamente. Se pedir senha no `sudo`, está correto.
+
+
 
