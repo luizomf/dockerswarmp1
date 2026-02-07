@@ -42,6 +42,7 @@ All notable changes to this project are documented here. This file records
 - Reworked the first 60 seconds into high-tempo beats and added Traefik pronunciation note
 - Added a full local Docker Compose dev stack (Traefik + API + frontend + Postgres)
 - Simplified Justfile recipes (kept only essential Compose/Swarm/watcher commands)
+- Added a guardrail prompt for Gemini second opinions (no tools / no repo touch)
 
 ## 2026-02-05
 
