@@ -8,6 +8,8 @@ feito via webhook.
 ## Docs importantes
 
 - `DEV_GUIDE.md`: bootstrap e hardening basico das VPS (SSH/UFW/fail2ban/WireGuard/NFS).
+- `docs/VPS_BOOTSTRAP.md`: como rodar `scripts/vps_bootstrap` e validar hardening.
+- `docs/REBUILD_MANUAL.md`: runbook (video-ready) para refazer o cluster e dar deploy com seguranca.
 - `docs/SECURITY_REVIEW.md`: review de segurança (baseline + trade-offs).
 - `docs/VIDEO_OUTLINE.md`: outline do video.
 - `docs/VIDEO_SCRIPT.md`: roteiro detalhado (SHOW/SAY/CMD).
@@ -121,6 +123,13 @@ Notas:
 ## CI / GHCR
 
 Este repositório possui um workflow que builda e envia imagens para o GHCR.
+Ele roda manualmente (workflow_dispatch) para nao buildar a cada commit e
+estourar limites do GHCR.
+
+Para publicar uma nova versao:
+
+- GitHub Actions -> workflow `Build Full Stack` -> `Run workflow`
+
 Para o webhook funcionar, configure no GitHub:
 
 - `DEPLOY_WEBHOOK_URL` (ex: `https://app.myswarm.cloud/api/webhook/github`)
@@ -458,11 +467,16 @@ Ou com `just`:
 just upb
 ```
 
-A API ficará disponível em:
+Rotas locais (via Traefik):
 
-- `http://localhost:8000/`
-- `http://localhost:8000/health`
-- `http://localhost:8000/api/visit` (retorna 503 sem Postgres)
+- Frontend: `http://app.localhost/`
+- API: `http://app.localhost/api/visit`
+
+Se voce quiser testar via `curl` usando `127.0.0.1`, passe o Host header:
+
+```bash
+curl -fsS -H 'Host: app.localhost' http://127.0.0.1/api/visit
+```
 
 Python (sem Docker):
 
