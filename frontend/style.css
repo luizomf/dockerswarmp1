@@ -29,6 +29,10 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -363,12 +367,16 @@ h1 {
   justify-content: center;
   align-items: center;
   padding: 1.5rem;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .stat-box {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 1 1 240px;
+  min-width: 0; /* allow long strings to shrink/wrap inside flex items */
 }
 
 .stat-label {
@@ -384,6 +392,17 @@ h1 {
   font-weight: 700;
   color: #fff;
   line-height: 1;
+  max-width: 100%;
+  text-align: center;
+}
+
+#visit-host {
+  /* Container id/hostname can be long; keep it readable and avoid horizontal overflow on mobile. */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: clamp(1rem, 4vw, 1.4rem);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* ===== GRID ===== */
@@ -555,4 +574,5 @@ footer .muted {
   .coupon-area { flex-direction: column; gap: 0.5rem; }
   .diagram-row.mixed { flex-direction: column; gap: 0.5rem; }
   .diagram-arrow.align-right { display: none; } /* Simplified for mobile */
+  .stats-panel { gap: 1.25rem; }
 }

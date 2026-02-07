@@ -84,6 +84,7 @@ All notable changes to this project are documented here. This file records
 - Clarified local Compose routes (Traefik host rule) and manual CI trigger in README
 - Clarified which guide to use (DEV_GUIDE vs VPS_BOOTSTRAP vs REBUILD_MANUAL) in README
 - Clarified Compose vs Swarm expectations and WireGuard example caveats in docs
+- Fixed mobile horizontal overflow on the stats panel by wrapping flex items and allowing the container id to wrap
 
 ## 2026-02-05
 
