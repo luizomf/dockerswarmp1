@@ -252,3 +252,8 @@ Fix:
 - Consider disabling the `/` "hostname" response in production (`src/dockerswarmp1/main.py:160-167`).
 - Consider removing NFS `no_root_squash` and limiting RPC services to `wg0`.
 
+Assumption:
+- This baseline assumes all nodes reachable via WireGuard are within the same
+  trust zone. If you need zero-trust between nodes, the architecture must
+  change (e.g., stronger isolation, least-privilege storage, different deploy
+  trigger model).

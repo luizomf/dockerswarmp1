@@ -83,6 +83,7 @@ All notable changes to this project are documented here. This file records
 - Summarized key security review highlights and trade-offs in README
 - Clarified local Compose routes (Traefik host rule) and manual CI trigger in README
 - Clarified which guide to use (DEV_GUIDE vs VPS_BOOTSTRAP vs REBUILD_MANUAL) in README
+- Clarified Compose vs Swarm expectations and WireGuard example caveats in docs
 
 ## 2026-02-05
 

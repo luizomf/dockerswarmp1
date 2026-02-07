@@ -119,6 +119,8 @@ Notas:
 
 - Compose nao suporta Swarm secrets. Localmente usamos env vars (via `.env`).
 - O Swarm continua usando secrets externos (`*_FILE`) conforme `docker/stack.yaml`.
+- Compose **nao** replica scheduling, placement constraints, deploy configs e
+  overlay networking do Swarm. Ele valida **arquitetura**, nao **orquestracao**.
 
 ## CI / GHCR
 

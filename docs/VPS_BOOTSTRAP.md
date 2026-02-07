@@ -211,6 +211,11 @@ Se aparecer `NOPASSWD`, ok durante o bootstrap, mas lembre de remover ao final.
 
 ## WireGuard (Semi)
 
+Nota importante:
+- Cada VPS tem **um** arquivo `wg0.conf` e ele deve ter **um** bloco `[Interface]`.
+- O exemplo abaixo mostra blocos separados (um por VPS) para referencia. Nao copie
+  3x `[Interface]` no mesmo arquivo.
+
 ```
 [Interface]
 Address = 10.100.0.8/24 # The internal IP of this VPS
