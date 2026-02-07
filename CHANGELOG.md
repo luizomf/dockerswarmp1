@@ -52,6 +52,7 @@ All notable changes to this project are documented here. This file records
 - Cleaned the deploy workflow matrix to only build the services used by this repo
 - Documented the "tighten UFW to wg0-only" follow-up step for existing VPS rules
 - Added concrete UFW migration commands to move Swarm/NFS rules from public IPs to wg0-only
+- Added an ideas inbox under docs/ to capture improvements without derailing PLAN.md
 
 ## 2026-02-05
 
