@@ -413,6 +413,60 @@ EOF
 sudo systemctl restart fail2ban
 ```
 
+## 11. Firewall Local (UFW)
+
+Defesa em profundidade. Se o firewall da Hostinger falhar ou for desativado, o UFW garante que ninguém acessa o que não deve.
+
+Aqui fazemos algo especial: **Liberamos o Swarm APENAS na interface VPN (`wg0`)**. Se alguém bater no IP público tentando falar com o Docker Swarm, será bloqueado.
+
+**Execute em TODAS as VPSs:**
+
+```bash
+# Defina seu IP e a rede da VPN
+export ADMIN_SSH_CIDR="187.108.118.25/32"    # <-- Troque pelo SEU IP
+export WG_CIDR="10.100.0.0/24"              # Rede interna que usaremos no WireGuard
+export WG_INTERFACE="wg0"                   # Interface do WireGuard
+
+sudo apt install -y ufw
+
+# Zera configurações antigas (garante estado limpo)
+sudo ufw disable
+sudo ufw --force reset
+
+# Política Padrão: Bloqueia tudo que entra, Libera tudo que sai
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Libera SEU acesso SSH e WireGuard (UDP)
+sudo ufw allow from "$ADMIN_SSH_CIDR" to any port 22 proto tcp comment "SSH Admin"
+sudo ufw allow from "$ADMIN_SSH_CIDR" to any port 51820 proto udp comment "WireGuard Admin"
+
+# Libera tráfego do SWARM e NFS APENAS na interface da VPN (wg0)
+# Ninguém de fora da VPN consegue tocar nesses serviços
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 2377 proto tcp comment "Swarm control (wg)"
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 7946 proto tcp comment "Swarm gossip (wg)"
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 7946 proto udp comment "Swarm gossip (wg)"
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 4789 proto udp comment "Swarm vxlan (wg)"
+sudo ufw allow in on "$WG_INTERFACE" from "$WG_CIDR" to any port 2049 proto tcp comment "NFSv4 (wg)"
+```
+
+**Execute APENAS no nó `kvm8` (Edge/Traefik):**
+
+```bash
+# O kvm8 é o único que recebe tráfego web público
+sudo ufw allow 80/tcp comment "HTTP public"
+sudo ufw allow 443/tcp comment "HTTPS public"
+```
+
+**Finalizar e Ativar (EM TODAS):**
+
+```bash
+# Se você errou o IP do SSH lá em cima, você vai cair agora.
+sudo ufw --force enable
+sudo ufw status verbose
+```
+
+
 
 
 
