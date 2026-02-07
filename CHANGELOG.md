@@ -42,7 +42,6 @@ All notable changes to this project are documented here. This file records
 - Reworked the first 60 seconds into high-tempo beats and added Traefik pronunciation note
 - Added a full local Docker Compose dev stack (Traefik + API + frontend + Postgres)
 - Simplified Justfile recipes (kept only essential Compose/Swarm/watcher commands)
-- Added a guardrail prompt for Gemini second opinions (no tools / no repo touch)
 - Added a rebuild manual covering safe node removal and full cluster rebuild order
 - Expanded rebuild manual with the kvm8 (last node) shutdown/leave sequence before formatting
 - Hardened VPS bootstrap script/docs (safer SSH restart, optional NOPASSWD sudo, WireGuard-only Swarm ports)
@@ -55,6 +54,7 @@ All notable changes to this project are documented here. This file records
 - Added an ideas inbox under docs/ to capture improvements without derailing PLAN.md
 - Documented the ideas inbox workflow in AGENTS.md
 - Extended the inbox workflow with Owner+Files to avoid conflicts and coordinate Gemini tasks
+- Removed the stored Gemini prompt doc; use inline prompts and the inbox owner workflow
 
 ## 2026-02-05
 
