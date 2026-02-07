@@ -48,7 +48,7 @@ nuke-local CONFIRM="no":
     echo "This will delete the local Docker Compose stack for this repo, INCLUDING the Postgres volume (data loss)."
     echo ""
     echo "Run:"
-    echo "  just nuke-local CONFIRM=yes"
+    echo "  just nuke-local yes"
     exit 1
   fi
 
