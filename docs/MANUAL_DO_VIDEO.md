@@ -119,5 +119,8 @@ Acesse cada VPS via SSH (inicialmente como `root`, usando a senha definida na fo
 > - `kvm4` -> `otaviomiranda.cloud` (IP: 191.101.70.130)
 > - `kvm8` -> `myswarm.cloud` (IP: 89.116.73.152)
 
+> **Dica Hostinger (Alternativa):**
+> Você também pode configurar o Hostname diretamente pelo hPanel em **VPS > Configurações > Configurações de VPS**. O painel valida se o domínio realmente pertence a você (ou aponta para a VPS). Se validado, ele configura o hostname automaticamente dentro do sistema operacional, dispensando o comando `hostnamectl`.
+
 *Repita o processo para `kvm4` e `kvm8` ajustando os nomes e domínios adequados.*
 
