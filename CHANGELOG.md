@@ -64,6 +64,7 @@ All notable changes to this project are documented here. This file records
 - Expanded the rebuild manual with a video-ready runbook (clone, .env, GHCR auth, secrets, deploy, validation, watcher)
 - Clarified in the rebuild manual that kvm8 must mount /mnt/nfs before starting the watcher (avoids mkdir permission errors)
 - Documented that draining/rebooting kvm8 causes full downtime in the rebuild manual
+- Documented that docker stack deploy does not read .env (use just or export vars first)
 
 ## 2026-02-05
 

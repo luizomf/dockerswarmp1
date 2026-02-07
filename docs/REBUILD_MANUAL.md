@@ -431,6 +431,22 @@ cd /opt/dockerswarmp1
 just stack-deploy
 ```
 
+Nota importante sobre `.env`:
+
+- `docker stack deploy` **nao** le `.env` automaticamente.
+- O `just` funciona porque exporta as variaveis do `.env` antes de rodar.
+- Se voce rodar o `docker stack deploy` "na mao", faca isso:
+
+```bash
+cd /opt/dockerswarmp1
+set -a
+. .env
+set +a
+docker stack deploy -c docker/stack.yaml dockerswarmp1 --with-registry-auth
+```
+
+Se `APP_DOMAIN` estiver vazio, o Traefik vai tentar `Host(\`\`)` e falhar no ACME.
+
 Validar:
 
 ```bash
