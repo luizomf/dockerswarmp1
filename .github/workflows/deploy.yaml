@@ -4,18 +4,7 @@ name: Build Full Stack
 # Este workflow roda apenas manualmente (para nao buildar a cada commit e
 # estourar limites do GHCR).
 on:
-  # workflow_dispatch:
-
-  # # Se quiser que rode ao fazer push no 'main'
-  # Ignore arquivos irrelevantes (tipo README.md, etc).
-  push:
-    branches: ['main']
-    paths-ignore:
-      - '**/*.md'
-      - '.gitignore'
-      - 'docs/**'
-      - 'LICENSE'
-      - 'Justfile'
+  workflow_dispatch:
 
 # CONCURRENCY
 # Concorrêcia
