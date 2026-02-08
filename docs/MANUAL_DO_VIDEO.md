@@ -725,6 +725,43 @@ git clone git@github.com:luizomf/dockerswarmp1.git /opt/dockerswarmp1
 
 > **Verificação:** Rode `ls /opt/dockerswarmp1` e veja se os arquivos apareceram.
 
+## 17. Inicializando o Swarm
+
+Agora unimos as máquinas em um cluster. Usaremos os IPs da VPN (`10.100.0.x`) para que o tráfego de gestão do Swarm passe dentro do túnel criptografado.
+
+**1. Iniciar no Líder (Execute no `kvm8`):**
+```bash
+# --advertise-addr garante que o Swarm use o IP da VPN
+docker swarm init --advertise-addr 10.100.0.8
+```
+*Copie o comando `docker swarm join ...` que vai aparecer na tela.*
+
+**2. Adicionar os Nós (Execute no `kvm2` e `kvm4`):**
+Cole o comando que você copiou. Deve ser parecido com:
+```bash
+docker swarm join --token SWMTKN-1-xxxxx 10.100.0.8:2377
+```
+
+**3. Promover a Gerentes (Execute no `kvm8`):**
+Por padrão, os novos nós entram como "Workers". Vamos promovê-los a "Managers" para ter alta disponibilidade (se o kvm8 cair, outro assume a gestão).
+```bash
+docker node promote kvm2 kvm4
+```
+
+**4. Validar o Cluster (Execute no `kvm8`):**
+```bash
+docker node ls
+```
+O resultado esperado é ver 3 nós, todos com `MANAGER STATUS` preenchido (Leader + Reachable).
+
+```text
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS
+ikfyqsoeqxybu...              kvm2       Ready     Active         Reachable
+9dxwy9io1zuan...              kvm4       Ready     Active         Reachable
+jo48gk4elvo4l... *            kvm8       Ready     Active         Leader
+```
+
+
 
 
 
