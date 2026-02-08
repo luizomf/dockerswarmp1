@@ -130,9 +130,9 @@ volumes:
   webhook_jobs:
     driver: local
     driver_opts:
-      type: none
-      o: bind
-      device: /mnt/nfs/webhook_jobs
+      type: 'nfs'
+      o: 'addr=10.100.0.8,rw,nfsvers=4.2,nconnect=8,rsize=262144,wsize=262144,hard,timeo=600,retrans=2,noatime'
+      device: ':/webhook_jobs'
 
 secrets:
   github_webhook_secret:
