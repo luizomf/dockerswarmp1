@@ -6,6 +6,17 @@ name: Build Full Stack
 on:
   workflow_dispatch:
 
+  # # Se quiser que rode ao fazer push no 'main'
+  # Ignore arquivos irrelevantes (tipo README.md, etc).
+  # push:
+  #   branches: ['main']
+  #   paths-ignore:
+  #     - '**/*.md'
+  #     - '.gitignore'
+  #     - 'docs/**'
+  #     - 'LICENSE'
+  #     - 'Justfile'
+
 # CONCURRENCY
 # Concorrêcia
 # Garante que o deploy aconteça em ordem.
