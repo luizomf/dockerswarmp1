@@ -788,6 +788,31 @@ APP_DOMAIN="myswarm.cloud"
 GITHUB_WEBHOOK_SECRET="f6a7d8..."
 ```
 
+## 19. Redes e Labels (Arquitetura)
+
+Antes do deploy, precisamos preparar o terreno:
+1.  **Labels:** Marcar o `kvm8` para que o Swarm saiba que este é o nó "Especial" (onde ficarão o Banco de Dados e o Traefik).
+2.  **Redes:** Criar as redes Overlay (que funcionam sobre o WireGuard).
+
+**Execute no `kvm8`:**
+
+```bash
+cd /opt/dockerswarmp1
+
+# === LABEL ===
+# Marca o nó atual como 'kvm8'.
+# Nossos serviços 'postgres' e 'traefik' têm uma regra: "Rode apenas onde role == kvm8"
+docker node update --label-add role=kvm8 kvm8
+
+# === REDES ===
+# 'public': Rede onde o Traefik escuta e roteia o tráfego externo.
+docker network create --driver=overlay --attachable public
+
+# 'internal': Rede fechada onde API e Banco conversam. Sem acesso externo direto.
+docker network create --driver=overlay --attachable --internal internal
+```
+
+
 
 
 
