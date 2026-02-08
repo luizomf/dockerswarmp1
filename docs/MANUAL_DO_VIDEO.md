@@ -834,6 +834,43 @@ echo "$GHCR_PAT" | docker login ghcr.io -u "$GITHUB_USER" --password-stdin
 
 > **Nota:** Como faremos o deploy usando `--with-registry-auth`, basta logar no Manager (`kvm8`) que ele repassa as credenciais para os Workers baixarem as imagens.
 
+## 21. Secrets (Segurança Máxima)
+
+Em vez de deixar senhas em arquivos de texto (`.env`), usamos o **Docker Secrets**. O Swarm encripta esses dados e só entrega na memória do container que precisa deles.
+
+**Execute no `kvm8`:**
+
+```bash
+# Gere uma senha forte para o Webhook (Python one-liner)
+python3 -c "import secrets; print(secrets.token_hex(32))"
+# COPIE O RESULTADO!
+
+# Cria o secret do Webhook
+# (Substitua VALOR_COPIADO pelo hash que você gerou)
+printf '%s' "VALOR_COPIADO" | docker secret create github_webhook_secret -
+
+# Cria o secret do Banco de Dados
+# (Pode gerar outro hash ou escolher uma senha forte sua)
+printf '%s' "MINHA_SENHA_ULTRA_FORTE_DO_BANCO" | docker secret create postgres_password -
+
+# Valide se foram criados
+docker secret ls
+```
+
+### 🔐 Configuração no GitHub (Actions)
+Para que o GitHub consiga "falar" com nosso Webhook com segurança, precisamos cadastrar esse mesmo segredo lá.
+
+1. Vá no seu repositório -> **Settings** -> **Secrets and variables** -> **Actions**.
+2. Clique em **New repository secret**.
+3. Crie dois secrets:
+    *   **Nome:** `DEPLOY_WEBHOOK_SECRET`
+        *   **Valor:** (O mesmo hash que você usou no comando `github_webhook_secret` acima)
+    *   **Nome:** `DEPLOY_WEBHOOK_URL`
+        *   **Valor:** `https://myswarm.cloud/api/webhook/github` (Ajuste para **SEU** domínio do `kvm8`)
+
+> **Importante:** Salve esses valores em um gerenciador de senhas (Bitwarden/1Password). Recuperar secrets de dentro do Swarm depois de criados dá trabalho.
+
+
 
 
 
