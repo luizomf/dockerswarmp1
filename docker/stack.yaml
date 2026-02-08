@@ -1,7 +1,5 @@
 # vim:sw=2:ts=2:et:set filetype=yaml :
 
-version: '3.9'
-
 x-deploy-defaults: &deploy_defaults
   update_config:
     parallelism: 1
@@ -12,8 +10,6 @@ x-deploy-defaults: &deploy_defaults
 services:
   traefik:
     image: traefik:v3.6.7
-    environment:
-      - DOCKER_API_VERSION=1.53
     command:
       - --providers.swarm=true
       - --providers.swarm.exposedbydefault=false
