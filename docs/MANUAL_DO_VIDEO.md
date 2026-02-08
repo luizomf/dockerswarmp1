@@ -707,6 +707,25 @@ Precisamos baixar o código do projeto nas VPSs. Para não usar sua senha pessoa
 
 *Repita para todas as 3 máquinas.*
 
+## 16. Clone do Repositório
+
+Agora trazemos o código para dentro dos servidores. Usaremos `/opt/dockerswarmp1` como padrão.
+
+**Execute em TODAS as VPSs:**
+
+```bash
+# Cria o diretório e ajusta permissão para seu usuário
+sudo mkdir -p /opt/dockerswarmp1
+sudo chown -R "$USER:$USER" /opt/dockerswarmp1
+
+# Clona o repositório (use a URL SSH para usar a Deploy Key)
+# 🚨 IMPORTANTE: Use o SEU repositório aqui
+git clone git@github.com:luizomf/dockerswarmp1.git /opt/dockerswarmp1
+```
+
+> **Verificação:** Rode `ls /opt/dockerswarmp1` e veja se os arquivos apareceram.
+
+
 
 
 
