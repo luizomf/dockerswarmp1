@@ -87,6 +87,13 @@ All notable changes to this project are documented here. This file records
 - Clarified Compose vs Swarm expectations and WireGuard example caveats in docs
 - Fixed mobile horizontal overflow on the stats panel by wrapping flex items and allowing the container id to wrap
 
+## 2026-02-07
+
+- Created `docs/MANUAL_DO_VIDEO.md` documenting the full live deploy process
+- Switched API volume from NFS driver to Bind Mount to fix permission errors
+- Updated `README.md` to index documentation and point to the video manual
+- Documented step-by-step Swarm setup, WireGuard, NFS, and Hardening in the new manual
+
 ## 2026-02-05
 
 - Introduced PLAN.md as a temporary planning artifact
