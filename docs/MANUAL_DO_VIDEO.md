@@ -892,6 +892,41 @@ sudo systemctl status webhook-watcher
 
 > **Como testar:** Se você rodar `sudo journalctl -u webhook-watcher -f`, verá o log do serviço esperando por arquivos na pasta compartilhada.
 
+## 23. O Grande Deploy
+
+Chegou a hora. Vamos subir a stack pela primeira vez manualmente para garantir que tudo funciona.
+
+**Execute no `kvm8`:**
+
+```bash
+cd /opt/dockerswarmp1
+
+# Carrega as variáveis do .env para o shell atual
+# (O 'docker stack deploy' NÃO lê o arquivo .env sozinho!)
+set -a; source .env; set +a
+
+# Dispara o deploy
+docker stack deploy -d -c docker/stack.yaml dockerswarmp1 --with-registry-auth
+```
+
+### Validando se subiu
+Agora é monitorar até que todos os serviços estejam "Running".
+
+```bash
+# Lista as tarefas rodando
+docker stack ps dockerswarmp1 --filter=desired-state=running
+
+# Ver logs específicos (se algo der errado)
+docker service logs dockerswarmp1_api -f
+docker service logs dockerswarmp1_traefik -f
+```
+
+**O que esperar:**
+1.  O `postgres` e o `traefik` devem subir no `kvm8`.
+2.  A `api` e o `frontend` devem se espalhar pelos nós (`kvm2`, `kvm4`, `kvm8`).
+3.  Se tudo estiver verde, acesse seu domínio no navegador!
+
+
 
 
 
