@@ -963,6 +963,55 @@ docker node ls
 docker stack ps dockerswarmp1
 ```
 
+## 25. Manutenção: Rotação de Logs (Essencial)
+
+Por padrão, o Docker guarda logs eternamente. Se sua API for "tagarela", o disco enche e o servidor trava. Vamos configurar um limite **no Host**.
+
+**Execute em TODOS os nós (`kvm2`, `kvm4`, `kvm8`):**
+
+1.  Crie ou edite `/etc/docker/daemon.json`:
+    ```bash
+    sudo vim /etc/docker/daemon.json
+    ```
+
+2.  Adicione a configuração de rotação (máximo 3 arquivos de 10MB):
+    ```json
+    {
+      "log-driver": "json-file",
+      "log-opts": {
+        "max-size": "10m",
+        "max-file": "3"
+      }
+    }
+    ```
+
+3.  Reinicie o Docker para aplicar:
+    ```bash
+    sudo systemctl restart docker
+    ```
+
+> **Dica Extra (Limpar Logs Agora):**
+> Se você já tem gigas de log e quer zerar tudo sem reiniciar containers:
+> ```bash
+> sudo find /var/lib/docker/containers -name "*-json.log" -type f -print -exec truncate -s 0 {} \;
+> ```
+
+## 26. Conclusão e Próximos Passos
+
+Parabéns! Você tem um cluster **Docker Swarm** rodando em 3 VPSs, com:
+*   ✅ **Segurança:** Firewall Borda + UFW + WireGuard + SSH Hardening.
+*   ✅ **Storage:** NFS com permissões restritas e montagem resiliente.
+*   ✅ **Rede:** Traefik com TLS automático e rede interna isolada.
+*   ✅ **Automação:** Webhook para deploy contínuo via GitHub Actions.
+
+**O que ficou de fora (mas vale estudar):**
+*   **Limites de Recursos:** Definir CPU/RAM limits no `stack.yaml` para evitar vizinhos barulhentos.
+*   **Monitoramento:** Prometheus + Grafana para métricas reais.
+*   **Backup:** Script para dump do Postgres e rsync da pasta do NFS.
+
+Agora é com você. Divirta-se com seu Swarm! 🚀
+
+
 
 
 
