@@ -761,6 +761,34 @@ ikfyqsoeqxybu...              kvm2       Ready     Active         Reachable
 jo48gk4elvo4l... *            kvm8       Ready     Active         Leader
 ```
 
+## 18. Variáveis de Ambiente (.env)
+
+O `just` (nosso task runner) precisa saber qual domínio usar e outros detalhes. Vamos configurar o `.env` apenas no nó que usaremos para fazer o deploy (geralmente o `kvm8`, mas como todos são managers, pode ser em qualquer um).
+
+**Execute no `kvm8`:**
+
+```bash
+cd /opt/dockerswarmp1
+cp .env.example .env
+vim .env
+```
+
+**O que você DEVE mudar:**
+1. `CURRENT_ENV`: mude para `production` (isso ativa o TLS real no Traefik).
+2. `EMAIL`: seu e-mail para o Let's Encrypt.
+3. `APP_DOMAIN`: o domínio que você apontou para o `kvm8` (ex: `myswarm.cloud` ou `app.myswarm.cloud`).
+4. `GITHUB_WEBHOOK_SECRET`: Gere um hash (`python3 -c "import secrets; print(secrets.token_hex(32))"`) e guarde. Usaremos o mesmo no GitHub.
+5. `POSTGRES_PASSWORD`: Use `ANY_VALUE` aqui, pois a senha real virá de um **Docker Secret** no próximo passo.
+
+**Exemplo:**
+```bash
+CURRENT_ENV=production
+EMAIL="seu@email.com"
+APP_DOMAIN="myswarm.cloud"
+GITHUB_WEBHOOK_SECRET="f6a7d8..."
+```
+
+
 
 
 
