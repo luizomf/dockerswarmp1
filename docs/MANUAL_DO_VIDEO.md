@@ -926,6 +926,44 @@ docker service logs dockerswarmp1_traefik -f
 2.  A `api` e o `frontend` devem se espalhar pelos nós (`kvm2`, `kvm4`, `kvm8`).
 3.  Se tudo estiver verde, acesse seu domínio no navegador!
 
+## 24. Macetes de Observabilidade (Manual)
+
+Cluster distribuído é chato de debugar porque os containers não estão mais "logo ali". Aqui vão uns truques para não ficar perdido.
+
+### Onde está meu container?
+Se você quer entrar na API (`docker exec`), primeiro precisa descobrir em qual VPS ela caiu.
+
+```bash
+# Mostra em qual NÓ (kvm2/4/8) cada réplica está
+docker service ps dockerswarmp1_api
+```
+
+Depois, acesse o nó via SSH e rode o exec lá:
+```bash
+ssh kvm2
+docker ps | grep api
+docker exec -it <CONTAINER_ID> sh
+```
+
+### Logs centralizados (Mais ou menos)
+Felizmente, você pode ver os logs agregados de TODAS as réplicas a partir do Manager, sem precisar ir em cada máquina.
+
+```bash
+# Vê logs de todas as APIs misturados
+docker service logs -f --tail=100 dockerswarmp1_api
+
+# Diferencia quem é quem (adiciona o ID no começo da linha)
+docker service logs -f --tail=100 dockerswarmp1_api --no-trunc
+```
+
+### Ver a "saúde" visualmente
+```bash
+# Mostra o status visual de todos os nós e serviços
+docker node ls
+docker stack ps dockerswarmp1
+```
+
+
 
 
 
