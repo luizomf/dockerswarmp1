@@ -870,6 +870,29 @@ Para que o GitHub consiga "falar" com nosso Webhook com segurança, precisamos c
 
 > **Importante:** Salve esses valores em um gerenciador de senhas (Bitwarden/1Password). Recuperar secrets de dentro do Swarm depois de criados dá trabalho.
 
+## 22. Instalar o Watcher (Deploy Automático)
+
+Para que o deploy aconteça automaticamente quando o GitHub nos avisar, usamos um pequeno script ("watcher") que fica olhando para a pasta do NFS.
+
+**Execute no `kvm8`:**
+
+```bash
+cd /opt/dockerswarmp1
+
+# Instala o serviço no systemd
+sudo cp scripts/webhook-watcher.service /etc/systemd/system/webhook-watcher.service
+
+# Recarrega o systemd e inicia o serviço
+sudo systemctl daemon-reload
+sudo systemctl enable --now webhook-watcher
+
+# Verifica se está rodando (deve estar "Active: active (running)")
+sudo systemctl status webhook-watcher
+```
+
+> **Como testar:** Se você rodar `sudo journalctl -u webhook-watcher -f`, verá o log do serviço esperando por arquivos na pasta compartilhada.
+
+
 
 
 
