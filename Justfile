@@ -83,7 +83,18 @@ swarm-label-kvm8:
   docker node update --label-add role=kvm8 kvm8
 
 stack-deploy:
-  docker stack deploy -c {{ stack_file }} {{ stack_name }} --with-registry-auth
+  #!/bin/bash
+  cd /opt/{{ stack_name }} || exit 1
+
+  git add .
+  git reset --hard
+
+  git pull origin main
+  docker stack deploy -d -c docker/stack.yaml {{ stack_name }} --with-registry-auth --prune
+
+  docker image prune -f
+  docker system prune -f
+  docker volume prune -f
 
 stack-rm:
   docker stack rm {{ stack_name }}
