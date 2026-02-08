@@ -133,7 +133,3 @@ secrets:
     external: true
   postgres_password:
     external: true
-
-# Required env vars before deploy:
-# EMAIL, GITHUB_WEBHOOK_SECRET, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD,
-# APP_DOMAIN.
