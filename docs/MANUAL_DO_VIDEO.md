@@ -679,6 +679,35 @@ ls -ld /mnt/nfs/webhook_jobs
 sudo rm -f /mnt/nfs/webhook_jobs/perm_test.*
 ```
 
+## 15. Deploy Keys (Acesso ao Git)
+
+Precisamos baixar o código do projeto nas VPSs. Para não usar sua senha pessoal, usaremos "Deploy Keys" (chaves SSH específicas para leitura do repositório).
+
+**Execute em cada VPS (`kvm2`, `kvm4`, `kvm8`):**
+
+1.  **Gere a chave de acesso:**
+    ```bash
+    ssh-keygen -t ed25519
+    # Pressione ENTER para todas as perguntas (local padrão, sem senha)
+    ```
+
+2.  **Pegue a chave pública:**
+    ```bash
+    cat ~/.ssh/id_ed25519.pub
+    ```
+    *Copie o conteúdo que aparece (começa com `ssh-ed25519 ...`).*
+
+3.  **Adicione no GitHub:**
+    *   Vá no seu repositório -> **Settings** -> **Deploy Keys**.
+    *   Clique em **Add deploy key**.
+    *   **Title:** `kvm2` (ou o nome do VPS).
+    *   **Key:** Cole a chave pública.
+    *   **Allow write access:** Deixe desmarcado (somente leitura é mais seguro).
+    *   Clique em **Add key**.
+
+*Repita para todas as 3 máquinas.*
+
+
 
 
 
