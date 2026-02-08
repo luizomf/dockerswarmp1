@@ -812,6 +812,29 @@ docker network create --driver=overlay --attachable public
 docker network create --driver=overlay --attachable --internal internal
 ```
 
+## 20. Autenticação no GHCR (Imagens Privadas)
+
+Nossas imagens Docker estão hospedadas no GitHub Container Registry (GHCR) e são privadas. Precisamos autenticar o cluster para baixá-las.
+
+**1. Gerar Token no GitHub:**
+*   Vá em **Settings** > **Developer Settings** > **Personal access tokens** > **Tokens (classic)**.
+*   Clique em **Generate new token (classic)**.
+*   Dê um nome (ex: `swarm-pull`).
+*   Marque APENAS o escopo `read:packages`.
+*   Copie o token gerado (começa com `ghp_...`).
+
+**2. Login no Docker (Execute no `kvm8`):**
+```bash
+export GITHUB_USER="SEU_USUARIO_GITHUB"
+export GHCR_PAT="COLE_SEU_TOKEN_AQUI"
+
+echo "$GHCR_PAT" | docker login ghcr.io -u "$GITHUB_USER" --password-stdin
+```
+*Se aparecer "Login Succeeded", estamos prontos.*
+
+> **Nota:** Como faremos o deploy usando `--with-registry-auth`, basta logar no Manager (`kvm8`) que ele repassa as credenciais para os Workers baixarem as imagens.
+
+
 
 
 
