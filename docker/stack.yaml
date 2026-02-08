@@ -58,7 +58,7 @@ services:
     networks:
       - internal
     volumes:
-      - webhook_jobs:/app/webhook_jobs
+      - /mnt/nfs/webhook_jobs:/app/webhook_jobs
     secrets:
       - github_webhook_secret
       - postgres_password
@@ -127,12 +127,6 @@ volumes:
     driver: local
   postgres_data:
     driver: local
-  webhook_jobs:
-    driver: local
-    driver_opts:
-      type: 'nfs'
-      o: 'addr=10.100.0.8,rw,nfsvers=4.2,nconnect=8,rsize=262144,wsize=262144,hard,timeo=600,retrans=2,noatime'
-      device: ':/webhook_jobs'
 
 secrets:
   github_webhook_secret:
