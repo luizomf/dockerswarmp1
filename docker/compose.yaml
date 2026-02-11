@@ -24,8 +24,8 @@ services:
       - --log.level=INFO
       - --accesslog=true
     ports:
-      - "80:80"
-      - "127.0.0.1:8080:8080"
+      - '80:80'
+      - '127.0.0.1:8080:8080'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -64,7 +64,8 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.middlewares.strip-server-header.headers.customresponseheaders.server=
-      - traefik.http.routers.api.rule=Host(`app.localhost`) && PathPrefix(`/api`)
+      - traefik.http.routers.api.rule=Host(`app.localhost`) &&
+        PathPrefix(`/api`)
       - traefik.http.routers.api.entrypoints=web
       - traefik.http.routers.api.priority=100
       - traefik.http.routers.api.middlewares=strip-server-header
@@ -103,7 +104,7 @@ services:
       # Postgres 18+ expects a mount at /var/lib/postgresql (not /var/lib/postgresql/data).
       - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
       interval: 5s
       timeout: 3s
       retries: 20
