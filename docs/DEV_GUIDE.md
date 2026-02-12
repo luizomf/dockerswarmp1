@@ -1,10 +1,22 @@
 # Manual do Vídeo: Cluster Docker Swarm na Hostinger
 
-Este documento é um registro fiel e passo a passo de todas as etapas executadas no vídeo para subir o cluster Docker Swarm.
+Este documento é um registro fiel e passo a passo de todas as etapas executadas
+no vídeo para subir o cluster Docker Swarm.
 
-> **Nota:** Este guia assume que você tem 3 VPS na Hostinger (KVM 2 ou superior) e um domínio configurado.
+> **Nota:** Este guia assume que você tem 3 VPS na Hostinger (KVM 2 ou superior)
+> e um domínio configurado.
+
+## Patrocínio (Hostinger)
+
+Este projeto e o vídeo foram patrocinados pela Hostinger.
+
+- Link: [hostinger.com/otaviomiranda](http://hostinger.com/otaviomiranda)
+- Cupom: `OTAVIOMIRANDA`
+- Benefício: `OTAVIOMIRANDA` dá **+10%** de desconto extra sobre o desconto do
+  link.
 
 ## Status Atual
+
 - [ ] VPS Formatadas
 - [ ] Acesso SSH Inicial
 - [ ] Configuração de Rede
@@ -13,99 +25,124 @@ Este documento é um registro fiel e passo a passo de todas as etapas executadas
 
 ## 0. Preparação e Desmontagem (Opcional)
 
-Caso você já tenha um cluster rodando e queira remover um nó de forma segura para formatá-lo (como estamos fazendo com o `kvm2`), siga estes passos. Isso garante que os serviços sejam migrados para outros nós antes do desligamento.
+Caso você já tenha um cluster rodando e queira remover um nó de forma segura
+para formatá-lo (como estamos fazendo com o `kvm2`), siga estes passos. Isso
+garante que os serviços sejam migrados para outros nós antes do desligamento.
 
 **No nó gerenciador principal (ex: `kvm8`):**
 
-1. **Drenar o nó (`Drain`):**
-   Isso remove todos os contêineres em execução neste nó e os move para outros nós disponíveis. Também impede que novas tarefas sejam agendadas nele.
+1. **Drenar o nó (`Drain`):** Isso remove todos os contêineres em execução neste
+   nó e os move para outros nós disponíveis. Também impede que novas tarefas
+   sejam agendadas nele.
+
    ```bash
    docker node update kvm2 --availability drain
    ```
 
-2. **Rebaixar para Worker (`Demote`):**
-   Se o nó for um Manager, é uma boa prática rebaixá-lo para Worker antes de removê-lo. Isso ajuda a manter o quórum do Swarm estável.
+2. **Rebaixar para Worker (`Demote`):** Se o nó for um Manager, é uma boa
+   prática rebaixá-lo para Worker antes de removê-lo. Isso ajuda a manter o
+   quórum do Swarm estável.
    ```bash
    docker node demote kvm2
    ```
 
 **No nó que será removido (ex: `kvm2`):**
 
-3. **Sair do Cluster:**
-   Este comando remove o nó do Swarm e limpa o estado local do Docker Swarm.
+3. **Sair do Cluster:** Este comando remove o nó do Swarm e limpa o estado local
+   do Docker Swarm.
    ```bash
    docker swarm leave
    ```
 
-> **Nota:** Repita este mesmo processo para outros nós secundários (como o `kvm4`), deixando o nó principal (`kvm8`) por último.
+> **Nota:** Repita este mesmo processo para outros nós secundários (como o
+> `kvm4`), deixando o nó principal (`kvm8`) por último.
 
 **De volta ao nó principal (ex: `kvm8`):**
 
-4. **Remover metadados dos nós antigos:**
-   Após os nós saírem, eles ficam listados como "Down". Precisamos removê-los da lista do gerenciador.
+4. **Remover metadados dos nós antigos:** Após os nós saírem, eles ficam
+   listados como "Down". Precisamos removê-los da lista do gerenciador.
+
    ```bash
    docker node rm kvm4
    docker node rm kvm2
    ```
 
-5. **Verificar o estado do Cluster:**
-   Neste momento, o `kvm8` é o único nó restante. Ele é crítico pois segura nosso Banco de Dados, o NFS e é a porta de entrada (Traefik).
-   
+5. **Verificar o estado do Cluster:** Neste momento, o `kvm8` é o único nó
+   restante. Ele é crítico pois segura nosso Banco de Dados, o NFS e é a porta
+   de entrada (Traefik).
+
    Confira se os nós sumiram e o estado atual dos serviços:
+
    ```bash
    # Deve listar apenas o kvm8 como ativo (Ready/Active)
    docker node ls
-   
+
    # Verifique suas stacks
    docker stack ls
-   
+
    # Verifique onde os serviços estão rodando (agora tudo deve estar tentando ir para o kvm8 ou falhando se não houver recursos)
    docker stack services dockerswarmp1
    ```
 
-6. **Remover a Stack:**
-   Agora que verificamos tudo, vamos remover a stack (o conjunto de aplicações) para garantir que nada fique pendurado ou escrevendo no disco enquanto desligamos.
+6. **Remover a Stack:** Agora que verificamos tudo, vamos remover a stack (o
+   conjunto de aplicações) para garantir que nada fique pendurado ou escrevendo
+   no disco enquanto desligamos.
+
    ```bash
    docker stack rm dockerswarmp1
    ```
-   *(Aguarde alguns instantes para que os containers sejam parados)*
 
-7. **Destruir o Cluster (Swarm Leave Force):**
-   Como este é o último gerenciador (Leader), ele não pode simplesmente "sair" (`leave`). Precisamos forçar o encerramento do cluster. **Atenção: Isso apaga todas as configurações do Swarm, segredos e serviços.**
+   _(Aguarde alguns instantes para que os containers sejam parados)_
+
+7. **Destruir o Cluster (Swarm Leave Force):** Como este é o último gerenciador
+   (Leader), ele não pode simplesmente "sair" (`leave`). Precisamos forçar o
+   encerramento do cluster. **Atenção: Isso apaga todas as configurações do
+   Swarm, segredos e serviços.**
+
    ```bash
    docker swarm leave --force
    ```
 
-   **Pronto!** O cluster foi desmontado. Agora as máquinas são apenas VPSs comuns com Docker instalado (ou prontas para serem formatadas).
+   **Pronto!** O cluster foi desmontado. Agora as máquinas são apenas VPSs
+   comuns com Docker instalado (ou prontas para serem formatadas).
 
 ## 1. Formatação (Reset Total)
 
-Para garantir um ambiente limpo, formatamos todas as 3 VPSs (`kvm2`, `kvm4`, `kvm8`) usando o painel da Hostinger.
+Para garantir um ambiente limpo, formatamos todas as 3 VPSs (`kvm2`, `kvm4`,
+`kvm8`) usando o painel da Hostinger.
 
 **No hPanel:**
+
 1. Acesse **VPS** > **Gerenciar** (em cada nó).
 2. Vá em **SO e Painel** > **Sistema Operacional** > **Mudar SO**.
 3. Escolha **SO com Aplicativo** e procure por **Docker** (Ubuntu 24.04).
 4. Defina uma senha forte para o `root`.
 
-> **Nota:** Existe um vídeo anterior detalhando exaustivamente este processo de criação de VPS. Aqui, usamos a imagem pronta "Ubuntu 24.04 with Docker" para ganhar tempo e garantir que o Docker Engine já venha instalado e configurado corretamente.
+> **Nota:** Existe um vídeo anterior detalhando exaustivamente este processo de
+> criação de VPS. Aqui, usamos a imagem pronta "Ubuntu 24.04 with Docker" para
+> ganhar tempo e garantir que o Docker Engine já venha instalado e configurado
+> corretamente.
 
 ## 2. Configuração de Hostname e DNS
 
-Acesse cada VPS via SSH (inicialmente como `root`, usando a senha definida na formatação) e configure a identidade da máquina.
+Acesse cada VPS via SSH (inicialmente como `root`, usando a senha definida na
+formatação) e configure a identidade da máquina.
 
-> **Dica de Acesso Rápido:**
-> No próprio hPanel, existe um botão **Terminal** (no topo direito da gestão da VPS). Ele abre um console web já logado como `root` (sem precisar de senha ou chave SSH configurada). É extremamente útil para esses ajustes iniciais antes de configurarmos o nosso acesso SSH definitivo.
+> **Dica de Acesso Rápido:** No próprio hPanel, existe um botão **Terminal** (no
+> topo direito da gestão da VPS). Ele abre um console web já logado como `root`
+> (sem precisar de senha ou chave SSH configurada). É extremamente útil para
+> esses ajustes iniciais antes de configurarmos o nosso acesso SSH definitivo.
 
 **Exemplo no `kvm2`:**
 
 1.  **Definir o Hostname:**
+
     ```bash
     hostnamectl set-hostname kvm2
     ```
 
-2.  **Ajustar Hosts:**
-    Edite o arquivo para associar o IP local ao novo nome e domínio (FQDN).
+2.  **Ajustar Hosts:** Edite o arquivo para associar o IP local ao novo nome e
+    domínio (FQDN).
     ```bash
     vim /etc/hosts
     ```
@@ -114,50 +151,62 @@ Acesse cada VPS via SSH (inicialmente como `root`, usando a senha definida na fo
     127.0.1.1       kvm2.inprod.cloud       kvm2
     ```
 
-> **Atenção aos Domínios:**
-> No vídeo, usamos 3 domínios reais diferentes que já possuem apontamentos DNS (Tipo A) criados na Cloudflare apontando para os IPs das VPSs. **Você precisará dos seus próprios domínios ou subdomínios.**
+> **Atenção aos Domínios:** No vídeo, usamos 3 domínios reais diferentes que já
+> possuem apontamentos DNS (Tipo A) criados na Cloudflare apontando para os IPs
+> das VPSs. **Você precisará dos seus próprios domínios ou subdomínios.**
 >
-> **Mapa da Demo:**
-> | Hostname | Domínio | IP Externo | IP VPN (WireGuard) | Usuário SSH |
-> | :--- | :--- | :--- | :--- | :--- |
-> | **kvm2** | `inprod.cloud` | `76.13.71.178` | `10.100.0.2/24` | `luizotavio` |
-> | **kvm4** | `otaviomiranda.cloud` | `191.101.70.130` | `10.100.0.4/24` | `luizotavio` |
-> | **kvm8** | `myswarm.cloud` | `89.116.73.152` | `10.100.0.8/24` | `luizotavio` |
+> **Mapa da Demo:** | Hostname | Domínio | IP Externo | IP VPN (WireGuard) |
+> Usuário SSH | | :--- | :--- | :--- | :--- | :--- | | **kvm2** | `inprod.cloud`
+> | `76.13.71.178` | `10.100.0.2/24` | `luizotavio` | | **kvm4** |
+> `otaviomiranda.cloud` | `191.101.70.130` | `10.100.0.4/24` | `luizotavio` | |
+> **kvm8** | `myswarm.cloud` | `89.116.73.152` | `10.100.0.8/24` | `luizotavio`
+> |
 
-> **Dica Hostinger (Alternativa):**
-> Você também pode configurar o Hostname diretamente pelo hPanel em **VPS > Configurações > Configurações de VPS**. O painel valida se o domínio realmente pertence a você (ou aponta para a VPS). Se validado, ele configura o hostname automaticamente dentro do sistema operacional, dispensando o comando `hostnamectl`.
+> **Dica Hostinger (Alternativa):** Você também pode configurar o Hostname
+> diretamente pelo hPanel em **VPS > Configurações > Configurações de VPS**. O
+> painel valida se o domínio realmente pertence a você (ou aponta para a VPS).
+> Se validado, ele configura o hostname automaticamente dentro do sistema
+> operacional, dispensando o comando `hostnamectl`.
 
-*Repita o processo para `kvm4` e `kvm8` ajustando os nomes e domínios adequados.*
+_Repita o processo para `kvm4` e `kvm8` ajustando os nomes e domínios
+adequados._
 
 ## 3. Firewall de Borda (hPanel)
 
-Antes de configurar o firewall interno (UFW), configuramos o **Firewall da Hostinger** (hPanel) para proteger a rede antes mesmo que o tráfego chegue nas VPSs.
+Antes de configurar o firewall interno (UFW), configuramos o **Firewall da
+Hostinger** (hPanel) para proteger a rede antes mesmo que o tráfego chegue nas
+VPSs.
 
-A política adotada é **Whitelist**: Bloqueia tudo (Drop) e libera apenas o necessário.
+A política adotada é **Whitelist**: Bloqueia tudo (Drop) e libera apenas o
+necessário.
 
 **Regras Aplicadas (Aplicar em TODAS as VPS):**
 
-| Ação | Protocolo | Porta | Origem (Source) | Descrição |
-| :--- | :--- | :--- | :--- | :--- |
-| **Accept** | TCP | Any | `187.108.118.25` (Seu IP) | Acesso total do admin (SSH, etc) |
-| **Accept** | TCP | Any | `89.116...`, `191.101...`, `76.13...` | Comunicação total entre os nós (Swarm TCP) |
-| **Accept** | UDP | `4789` | `89.116...`, `191.101...`, `76.13...` | Swarm Overlay Network (VXLAN) |
-| **Accept** | UDP | `7946` | `89.116...`, `191.101...`, `76.13...` | Swarm Container Network Discovery |
-| **Accept** | ICMP | Any | `89.116...`, `191.101...`, `76.13...` | Ping entre os nós |
-| **Accept** | ICMP | Any | `187.108.118.25` (Seu IP) | Ping do admin |
-| **Accept** | HTTPS | `443` | `Any` (Qualquer) | Tráfego Web Seguro (Traefik) |
-| **Accept** | HTTP | `80` | `Any` (Qualquer) | Tráfego Web (Traefik) |
-| **Accept** | UDP | `51820` | IPs dos Nós + Seu IP | WireGuard VPN |
-| **Accept** | TCP | `8080` | `187.108.118.25` (Seu IP) | Traefik Dashboard (Dev/Debug) |
-| **Drop** | Any | Any | `Any` | **Regra Final: Bloqueia todo o resto** |
+| Ação       | Protocolo | Porta   | Origem (Source)                       | Descrição                                  |
+| :--------- | :-------- | :------ | :------------------------------------ | :----------------------------------------- |
+| **Accept** | TCP       | Any     | `187.108.118.25` (Seu IP)             | Acesso total do admin (SSH, etc)           |
+| **Accept** | TCP       | Any     | `89.116...`, `191.101...`, `76.13...` | Comunicação total entre os nós (Swarm TCP) |
+| **Accept** | UDP       | `4789`  | `89.116...`, `191.101...`, `76.13...` | Swarm Overlay Network (VXLAN)              |
+| **Accept** | UDP       | `7946`  | `89.116...`, `191.101...`, `76.13...` | Swarm Container Network Discovery          |
+| **Accept** | ICMP      | Any     | `89.116...`, `191.101...`, `76.13...` | Ping entre os nós                          |
+| **Accept** | ICMP      | Any     | `187.108.118.25` (Seu IP)             | Ping do admin                              |
+| **Accept** | HTTPS     | `443`   | `Any` (Qualquer)                      | Tráfego Web Seguro (Traefik)               |
+| **Accept** | HTTP      | `80`    | `Any` (Qualquer)                      | Tráfego Web (Traefik)                      |
+| **Accept** | UDP       | `51820` | IPs dos Nós + Seu IP                  | WireGuard VPN                              |
+| **Accept** | TCP       | `8080`  | `187.108.118.25` (Seu IP)             | Traefik Dashboard (Dev/Debug)              |
+| **Drop**   | Any       | Any     | `Any`                                 | **Regra Final: Bloqueia todo o resto**     |
 
-> **Nota:** Certifique-se de substituir o IP `187.108.118.25` pelo **SEU IP** atual de internet. Os demais IPs devem ser os IPs das suas outras VPSs.
+> **Nota:** Certifique-se de substituir o IP `187.108.118.25` pelo **SEU IP**
+> atual de internet. Os demais IPs devem ser os IPs das suas outras VPSs.
 
-> **Importante:** Essa configuração protege a borda. Ainda assim, configuraremos o `UFW` (firewall local) mais adiante para defesa em profundidade e controle da VPN.
+> **Importante:** Essa configuração protege a borda. Ainda assim, configuraremos
+> o `UFW` (firewall local) mais adiante para defesa em profundidade e controle
+> da VPN.
 
 ## 4. Criação do Usuário e Docker
 
-Ainda logado como `root` (via Terminal web ou SSH), vamos criar o usuário de trabalho e garantir que ele tenha acesso ao Docker e poderes administrativos.
+Ainda logado como `root` (via Terminal web ou SSH), vamos criar o usuário de
+trabalho e garantir que ele tenha acesso ao Docker e poderes administrativos.
 
 **Execute em TODAS as VPSs (`kvm2`, `kvm4`, `kvm8`):**
 
@@ -179,30 +228,37 @@ passwd $YOUR_USERNAME
 su $YOUR_USERNAME
 ```
 
-> **Verificação:** Após rodar `su $YOUR_USERNAME`, tente rodar `docker ps`. Se funcionar sem erro de permissão, o grupo `docker` foi aplicado corretamente. Se pedir senha no `sudo`, está correto.
+> **Verificação:** Após rodar `su $YOUR_USERNAME`, tente rodar `docker ps`. Se
+> funcionar sem erro de permissão, o grupo `docker` foi aplicado corretamente.
+> Se pedir senha no `sudo`, está correto.
 
 ## 5. Configuração SSH (Chaves e Acesso Fácil)
 
-Agora vamos configurar o acesso seguro e prático a partir do **SEU COMPUTADOR**. Isso elimina a necessidade de digitar senhas e IPs o tempo todo.
+Agora vamos configurar o acesso seguro e prático a partir do **SEU COMPUTADOR**.
+Isso elimina a necessidade de digitar senhas e IPs o tempo todo.
 
-**1. Gerar par de chaves SSH (no seu PC):**
-Se você ainda não tem uma chave específica para este projeto:
+**1. Gerar par de chaves SSH (no seu PC):** Se você ainda não tem uma chave
+específica para este projeto:
+
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/id_hostinger -C "luizotavio"
 ```
 
-**2. Enviar a chave pública para as VPSs:**
-Isso autoriza sua chave a entrar nos servidores. Repita para cada IP ou domínio configurado.
+**2. Enviar a chave pública para as VPSs:** Isso autoriza sua chave a entrar nos
+servidores. Repita para cada IP ou domínio configurado.
+
 ```bash
 ssh-copy-id -i ~/.ssh/id_hostinger.pub luizotavio@inprod.cloud
 ssh-copy-id -i ~/.ssh/id_hostinger.pub luizotavio@otaviomiranda.cloud
 ssh-copy-id -i ~/.ssh/id_hostinger.pub luizotavio@myswarm.cloud
 ```
 
-**3. Criar "apelidos" no `~/.ssh/config` (no seu PC):**
-Para não precisar digitar `ssh luizotavio@inprod.cloud` toda hora, vamos criar atalhos (`ssh kvm2`).
+**3. Criar "apelidos" no `~/.ssh/config` (no seu PC):** Para não precisar
+digitar `ssh luizotavio@inprod.cloud` toda hora, vamos criar atalhos
+(`ssh kvm2`).
 
 Edite ou crie o arquivo `~/.ssh/config`:
+
 ```text
 Host kvm2
   IgnoreUnknown AddKeysToAgent,UseKeychain
@@ -229,19 +285,23 @@ Host kvm8
   IdentityFile ~/.ssh/id_hostinger
 ```
 
-**Teste:**
-Agora basta digitar:
+**Teste:** Agora basta digitar:
+
 ```bash
 ssh kvm2
 ```
+
 Se conectar direto, está tudo pronto!
 
 ## 6. Sudo sem Senha (Opcional/Demo)
 
-Para agilizar o desenvolvimento e evitar digitar a senha de `sudo` repetidamente durante o vídeo/configuração, vamos configurar o `NOPASSWD`.
+Para agilizar o desenvolvimento e evitar digitar a senha de `sudo` repetidamente
+durante o vídeo/configuração, vamos configurar o `NOPASSWD`.
 
-> **⚠️ ALERTA DE SEGURANÇA:**
-> Em ambientes de produção críticos, isso **não é recomendado**. Se um atacante ganhar acesso ao seu usuário, ele ganha acesso `root` instantaneamente sem barreiras. Faça isso apenas se entender o risco ou para ambientes de laboratório/demo.
+> **⚠️ ALERTA DE SEGURANÇA:** Em ambientes de produção críticos, isso **não é
+> recomendado**. Se um atacante ganhar acesso ao seu usuário, ele ganha acesso
+> `root` instantaneamente sem barreiras. Faça isso apenas se entender o risco ou
+> para ambientes de laboratório/demo.
 
 **Em cada VPS:**
 
@@ -260,7 +320,8 @@ Salve e saia. Agora comandos como `sudo apt update` rodarão direto.
 
 ## 7. Atualização e Pacotes Básicos
 
-Vamos garantir que o sistema esteja seguro, atualizado e com nossas ferramentas favoritas instaladas.
+Vamos garantir que o sistema esteja seguro, atualizado e com nossas ferramentas
+favoritas instaladas.
 
 **Execute em TODAS as VPSs:**
 
@@ -285,7 +346,8 @@ sudo timedatectl set-timezone "$TIMEZONE"
 
 ## 8. Configuração do Git
 
-Como vamos clonar o repositório e talvez fazer ajustes rápidos, configuramos o Git com nossa identidade.
+Como vamos clonar o repositório e talvez fazer ajustes rápidos, configuramos o
+Git com nossa identidade.
 
 **Execute em TODAS as VPSs:**
 
@@ -307,12 +369,16 @@ git config --global init.defaultbranch main
 
 ## 9. Hardening do SSH (Blindando o Acesso)
 
-Agora vamos trancar as portas. Desabilitaremos login por senha e acesso de root, deixando apenas nossas chaves autorizadas.
+Agora vamos trancar as portas. Desabilitaremos login por senha e acesso de root,
+deixando apenas nossas chaves autorizadas.
 
-> **⚠️ ALERTA CRÍTICO (Tranqueira à vista):**
-> Este passo **DESATIVA** o login por senha.
-> 1. Certifique-se que você já configurou suas chaves SSH (`ssh-copy-id`) no passo anterior e testou o acesso (`ssh kvm2`).
-> 2. Se você rodar isso sem ter a chave configurada, **VOCÊ PERDERÁ O ACESSO SSH** e terá que usar o console de emergência da Hostinger para consertar.
+> **⚠️ ALERTA CRÍTICO (Tranqueira à vista):** Este passo **DESATIVA** o login
+> por senha.
+>
+> 1. Certifique-se que você já configurou suas chaves SSH (`ssh-copy-id`) no
+>    passo anterior e testou o acesso (`ssh kvm2`).
+> 2. Se você rodar isso sem ter a chave configurada, **VOCÊ PERDERÁ O ACESSO
+>    SSH** e terá que usar o console de emergência da Hostinger para consertar.
 
 **Execute em TODAS as VPSs:**
 
@@ -371,13 +437,20 @@ sudo sshd -t
 sudo systemctl restart ssh
 ```
 
-> **Dica:** Mantenha sua sessão atual aberta. Abra **outro terminal** no seu PC e tente conectar (`ssh kvm2`). Se funcionar, sucesso! Se não, você ainda tem a sessão aberta para corrigir.
+> **Dica:** Mantenha sua sessão atual aberta. Abra **outro terminal** no seu PC
+> e tente conectar (`ssh kvm2`). Se funcionar, sucesso! Se não, você ainda tem a
+> sessão aberta para corrigir.
 
 ## 10. Fail2Ban (Proteção Brute-Force)
 
-Mesmo sem senhas, logs de tentativas de acesso poluem o sistema e consomem recursos. O Fail2Ban bloqueia IPs que tentam conectar e falham repetidamente.
+Mesmo sem senhas, logs de tentativas de acesso poluem o sistema e consomem
+recursos. O Fail2Ban bloqueia IPs que tentam conectar e falham repetidamente.
 
-> **Nota do Autor:** Sim, eu sei. Estamos rodando Fail2Ban numa máquina que já tem DOIS firewalls (Borda + UFW) bloqueando a porta 22 para todo mundo, exceto meu IP. Isso se chama "paranoia saudável" (ou exagero mesmo). Se um dia eu errar a config do firewall e abrir a porta sem querer, o Fail2Ban estará lá rindo e banindo os bots. 😂
+> **Nota do Autor:** Sim, eu sei. Estamos rodando Fail2Ban numa máquina que já
+> tem DOIS firewalls (Borda + UFW) bloqueando a porta 22 para todo mundo, exceto
+> meu IP. Isso se chama "paranoia saudável" (ou exagero mesmo). Se um dia eu
+> errar a config do firewall e abrir a porta sem querer, o Fail2Ban estará lá
+> rindo e banindo os bots. 😂
 
 **Execute em TODAS as VPSs:**
 
@@ -417,9 +490,12 @@ sudo systemctl restart fail2ban
 
 ## 11. Firewall Local (UFW)
 
-Defesa em profundidade. Se o firewall da Hostinger falhar ou for desativado, o UFW garante que ninguém acessa o que não deve.
+Defesa em profundidade. Se o firewall da Hostinger falhar ou for desativado, o
+UFW garante que ninguém acessa o que não deve.
 
-Aqui fazemos algo especial: **Liberamos o Swarm APENAS na interface VPN (`wg0`)**. Se alguém bater no IP público tentando falar com o Docker Swarm, será bloqueado.
+Aqui fazemos algo especial: **Liberamos o Swarm APENAS na interface VPN
+(`wg0`)**. Se alguém bater no IP público tentando falar com o Docker Swarm, será
+bloqueado.
 
 **Execute em TODAS as VPSs:**
 
@@ -472,30 +548,36 @@ sudo ufw status verbose
 
 ## 12. Teste Rápido de Firewall (HTTP)
 
-Vamos subir um servidor web temporário em cada máquina para provar que nossas regras de firewall funcionam.
+Vamos subir um servidor web temporário em cada máquina para provar que nossas
+regras de firewall funcionam.
 
 **Execute em todos os nós (`kvm2`, `kvm4`, `kvm8`):**
 
 ```bash
-mkdir test 
+mkdir test
 echo "<div style='display: grid; place-items: center; font-size: 5vw; height: 100vh;'>HELLO FROM $(hostname)</div>" > test/index.html
 sudo python3 -m http.server -d test 80
 ```
 
 **Resultado esperado:**
-1. Abra `http://myswarm.cloud` (ou IP do `kvm8`) no navegador -> **FUNCIONA** (Você vê "HELLO FROM kvm8").
-2. Abra `http://inprod.cloud` (ou IP do `kvm2`) -> **FALHA** (Timeout/Recusado).
-3. Abra `http://otaviomiranda.cloud` (ou IP do `kvm4`) -> **FALHA** (Timeout/Recusado).
 
-**Para parar:**
-Pressione `Ctrl+C` no terminal e remova a pasta de teste:
+1. Abra `http://myswarm.cloud` (ou IP do `kvm8`) no navegador -> **FUNCIONA**
+   (Você vê "HELLO FROM kvm8").
+2. Abra `http://inprod.cloud` (ou IP do `kvm2`) -> **FALHA** (Timeout/Recusado).
+3. Abra `http://otaviomiranda.cloud` (ou IP do `kvm4`) -> **FALHA**
+   (Timeout/Recusado).
+
+**Para parar:** Pressione `Ctrl+C` no terminal e remova a pasta de teste:
+
 ```bash
 rm -r test
 ```
 
 ## 13. WireGuard (VPN Privada)
 
-Essa é a parte mais trabalhosa, mas essencial. Vamos criar uma rede privada (`10.100.0.0/24`) onde os nós conversarão de forma segura e criptografada, sem expor o Swarm na internet pública.
+Essa é a parte mais trabalhosa, mas essencial. Vamos criar uma rede privada
+(`10.100.0.0/24`) onde os nós conversarão de forma segura e criptografada, sem
+expor o Swarm na internet pública.
 
 **Execute em cada VPS, AJUSTANDO a variável `WG_IP` para cada uma:**
 
@@ -559,11 +641,15 @@ sudo wg show
 
 ### Passo 2: O " troca-troca" de chaves (Manual)
 
-Agora vem a parte manual. Você precisa editar o arquivo `/etc/wireguard/wg0.conf` em cada máquina e adicionar os blocos `[Peer]` das **outras duas máquinas**.
+Agora vem a parte manual. Você precisa editar o arquivo
+`/etc/wireguard/wg0.conf` em cada máquina e adicionar os blocos `[Peer]` das
+**outras duas máquinas**.
 
-Use `sudo wg show` em cada terminal para ver a Public Key de cada um e monte o quebra-cabeça.
+Use `sudo wg show` em cada terminal para ver a Public Key de cada um e monte o
+quebra-cabeça.
 
 **Exemplo de como deve ficar o arquivo no `kvm2`:**
+
 ```ini
 [Interface]
 Address = 10.100.0.2/24
@@ -583,26 +669,32 @@ PersistentKeepalive = 25
 ```
 
 Após editar, aplique as mudanças:
+
 ```bash
 sudo systemctl restart wg-quick@wg0
 sudo wg show
 ```
 
-**Teste de Ping (Fundamental):**
-Do `kvm2`, tente pingar os IPs internos dos outros:
+**Teste de Ping (Fundamental):** Do `kvm2`, tente pingar os IPs internos dos
+outros:
+
 ```bash
 ping 10.100.0.4
 ping 10.100.0.8
 ```
+
 Se pingar, parabéns! Sua rede privada criptografada está de pé.
 
 ## 14. Configuração do NFS (Storage Compartilhado)
 
-Como estamos em um cluster, precisamos de um local comum para que arquivos (como os jobs do webhook) sejam vistos por todos, independente de onde o serviço esteja rodando. O `kvm8` será nosso servidor de arquivos.
+Como estamos em um cluster, precisamos de um local comum para que arquivos (como
+os jobs do webhook) sejam vistos por todos, independente de onde o serviço
+esteja rodando. O `kvm8` será nosso servidor de arquivos.
 
 ### Servidor NFS (Apenas no kvm8)
 
-Configuramos o servidor com permissões restritas (UID/GID 1011) para alinhar com o usuário que rodará dentro dos containers.
+Configuramos o servidor com permissões restritas (UID/GID 1011) para alinhar com
+o usuário que rodará dentro dos containers.
 
 ```bash
 # Instala o servidor
@@ -640,7 +732,9 @@ sudo exportfs -v
 
 ### Clientes NFS (kvm2, kvm4 e também no kvm8)
 
-Todos os nós precisam montar essa pasta. Sim, inclusive o `kvm8` monta a própria pasta via rede (loopback/VPN) para garantir que o caminho `/mnt/nfs` seja idêntico em todo o cluster.
+Todos os nós precisam montar essa pasta. Sim, inclusive o `kvm8` monta a própria
+pasta via rede (loopback/VPN) para garantir que o caminho `/mnt/nfs` seja
+idêntico em todo o cluster.
 
 ```bash
 # Instala o cliente
@@ -666,7 +760,9 @@ findmnt /mnt/nfs
 ```
 
 ### Validação Final de Permissões
-Teste se conseguimos escrever na pasta compartilhada (como se fossemos o app). Execute em qualquer nó:
+
+Teste se conseguimos escrever na pasta compartilhada (como se fossemos o app).
+Execute em qualquer nó:
 
 ```bash
 # Tenta criar um arquivo de teste
@@ -681,35 +777,40 @@ sudo rm -f /mnt/nfs/webhook_jobs/perm_test.*
 
 ## 15. Deploy Keys (Acesso ao Git)
 
-Precisamos baixar o código do projeto nas VPSs. Para não usar sua senha pessoal, usaremos "Deploy Keys" (chaves SSH específicas para leitura do repositório).
+Precisamos baixar o código do projeto nas VPSs. Para não usar sua senha pessoal,
+usaremos "Deploy Keys" (chaves SSH específicas para leitura do repositório).
 
 **Execute em cada VPS (`kvm2`, `kvm4`, `kvm8`):**
 
 1.  **Gere a chave de acesso:**
+
     ```bash
     ssh-keygen -t ed25519
     # Pressione ENTER para todas as perguntas (local padrão, sem senha)
     ```
 
 2.  **Pegue a chave pública:**
+
     ```bash
     cat ~/.ssh/id_ed25519.pub
     ```
-    *Copie o conteúdo que aparece (começa com `ssh-ed25519 ...`).*
+
+    _Copie o conteúdo que aparece (começa com `ssh-ed25519 ...`)._
 
 3.  **Adicione no GitHub:**
-    *   Vá no seu repositório -> **Settings** -> **Deploy Keys**.
-    *   Clique em **Add deploy key**.
-    *   **Title:** `kvm2` (ou o nome do VPS).
-    *   **Key:** Cole a chave pública.
-    *   **Allow write access:** Deixe desmarcado (somente leitura é mais seguro).
-    *   Clique em **Add key**.
+    - Vá no seu repositório -> **Settings** -> **Deploy Keys**.
+    - Clique em **Add deploy key**.
+    - **Title:** `kvm2` (ou o nome do VPS).
+    - **Key:** Cole a chave pública.
+    - **Allow write access:** Deixe desmarcado (somente leitura é mais seguro).
+    - Clique em **Add key**.
 
-*Repita para todas as 3 máquinas.*
+_Repita para todas as 3 máquinas._
 
 ## 16. Clone do Repositório
 
-Agora trazemos o código para dentro dos servidores. Usaremos `/opt/dockerswarmp1` como padrão.
+Agora trazemos o código para dentro dos servidores. Usaremos
+`/opt/dockerswarmp1` como padrão.
 
 **Execute em TODAS as VPSs:**
 
@@ -723,36 +824,46 @@ sudo chown -R "$USER:$USER" /opt/dockerswarmp1
 git clone git@github.com:luizomf/dockerswarmp1.git /opt/dockerswarmp1
 ```
 
-> **Verificação:** Rode `ls /opt/dockerswarmp1` e veja se os arquivos apareceram.
+> **Verificação:** Rode `ls /opt/dockerswarmp1` e veja se os arquivos
+> apareceram.
 
 ## 17. Inicializando o Swarm
 
-Agora unimos as máquinas em um cluster. Usaremos os IPs da VPN (`10.100.0.x`) para que o tráfego de gestão do Swarm passe dentro do túnel criptografado.
+Agora unimos as máquinas em um cluster. Usaremos os IPs da VPN (`10.100.0.x`)
+para que o tráfego de gestão do Swarm passe dentro do túnel criptografado.
 
 **1. Iniciar no Líder (Execute no `kvm8`):**
+
 ```bash
 # --advertise-addr garante que o Swarm use o IP da VPN
 docker swarm init --advertise-addr 10.100.0.8
 ```
-*Copie o comando `docker swarm join ...` que vai aparecer na tela.*
 
-**2. Adicionar os Nós (Execute no `kvm2` e `kvm4`):**
-Cole o comando que você copiou. Deve ser parecido com:
+_Copie o comando `docker swarm join ...` que vai aparecer na tela._
+
+**2. Adicionar os Nós (Execute no `kvm2` e `kvm4`):** Cole o comando que você
+copiou. Deve ser parecido com:
+
 ```bash
 docker swarm join --token SWMTKN-1-xxxxx 10.100.0.8:2377
 ```
 
-**3. Promover a Gerentes (Execute no `kvm8`):**
-Por padrão, os novos nós entram como "Workers". Vamos promovê-los a "Managers" para ter alta disponibilidade (se o kvm8 cair, outro assume a gestão).
+**3. Promover a Gerentes (Execute no `kvm8`):** Por padrão, os novos nós entram
+como "Workers". Vamos promovê-los a "Managers" para ter alta disponibilidade (se
+o kvm8 cair, outro assume a gestão).
+
 ```bash
 docker node promote kvm2 kvm4
 ```
 
 **4. Validar o Cluster (Execute no `kvm8`):**
+
 ```bash
 docker node ls
 ```
-O resultado esperado é ver 3 nós, todos com `MANAGER STATUS` preenchido (Leader + Reachable).
+
+O resultado esperado é ver 3 nós, todos com `MANAGER STATUS` preenchido
+(Leader + Reachable).
 
 ```text
 ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS
@@ -763,7 +874,9 @@ jo48gk4elvo4l... *            kvm8       Ready     Active         Leader
 
 ## 18. Variáveis de Ambiente (.env)
 
-O `just` (nosso task runner) precisa saber qual domínio usar e outros detalhes. Vamos configurar o `.env` apenas no nó que usaremos para fazer o deploy (geralmente o `kvm8`, mas como todos são managers, pode ser em qualquer um).
+O `just` (nosso task runner) precisa saber qual domínio usar e outros detalhes.
+Vamos configurar o `.env` apenas no nó que usaremos para fazer o deploy
+(geralmente o `kvm8`, mas como todos são managers, pode ser em qualquer um).
 
 **Execute no `kvm8`:**
 
@@ -774,13 +887,19 @@ vim .env
 ```
 
 **O que você DEVE mudar:**
+
 1. `CURRENT_ENV`: mude para `production` (isso ativa o TLS real no Traefik).
 2. `EMAIL`: seu e-mail para o Let's Encrypt.
-3. `APP_DOMAIN`: o domínio que você apontou para o `kvm8` (ex: `myswarm.cloud` ou `app.myswarm.cloud`).
-4. `GITHUB_WEBHOOK_SECRET`: Gere um hash (`python3 -c "import secrets; print(secrets.token_hex(32))"`) e guarde. Usaremos o mesmo no GitHub.
-5. `POSTGRES_PASSWORD`: Use `ANY_VALUE` aqui, pois a senha real virá de um **Docker Secret** no próximo passo.
+3. `APP_DOMAIN`: o domínio que você apontou para o `kvm8` (ex: `myswarm.cloud`
+   ou `app.myswarm.cloud`).
+4. `GITHUB_WEBHOOK_SECRET`: Gere um hash
+   (`python3 -c "import secrets; print(secrets.token_hex(32))"`) e guarde.
+   Usaremos o mesmo no GitHub.
+5. `POSTGRES_PASSWORD`: Use `ANY_VALUE` aqui, pois a senha real virá de um
+   **Docker Secret** no próximo passo.
 
 **Exemplo:**
+
 ```bash
 CURRENT_ENV=production
 EMAIL="seu@email.com"
@@ -791,7 +910,9 @@ GITHUB_WEBHOOK_SECRET="f6a7d8..."
 ## 19. Redes e Labels (Arquitetura)
 
 Antes do deploy, precisamos preparar o terreno:
-1.  **Labels:** Marcar o `kvm8` para que o Swarm saiba que este é o nó "Especial" (onde ficarão o Banco de Dados e o Traefik).
+
+1.  **Labels:** Marcar o `kvm8` para que o Swarm saiba que este é o nó
+    "Especial" (onde ficarão o Banco de Dados e o Traefik).
 2.  **Redes:** Criar as redes Overlay (que funcionam sobre o WireGuard).
 
 **Execute no `kvm8`:**
@@ -814,29 +935,38 @@ docker network create --driver=overlay --attachable --internal internal
 
 ## 20. Autenticação no GHCR (Imagens Privadas)
 
-Nossas imagens Docker estão hospedadas no GitHub Container Registry (GHCR) e são privadas. Precisamos autenticar o cluster para baixá-las.
+Nossas imagens Docker estão hospedadas no GitHub Container Registry (GHCR) e são
+privadas. Precisamos autenticar o cluster para baixá-las.
 
 **1. Gerar Token no GitHub:**
-*   Vá em **Settings** > **Developer Settings** > **Personal access tokens** > **Tokens (classic)**.
-*   Clique em **Generate new token (classic)**.
-*   Dê um nome (ex: `swarm-pull`).
-*   Marque APENAS o escopo `read:packages`.
-*   Copie o token gerado (começa com `ghp_...`).
+
+- Vá em **Settings** > **Developer Settings** > **Personal access tokens** >
+  **Tokens (classic)**.
+- Clique em **Generate new token (classic)**.
+- Dê um nome (ex: `swarm-pull`).
+- Marque APENAS o escopo `read:packages`.
+- Copie o token gerado (começa com `ghp_...`).
 
 **2. Login no Docker (Execute no `kvm8`):**
+
 ```bash
 export GITHUB_USER="SEU_USUARIO_GITHUB"
 export GHCR_PAT="COLE_SEU_TOKEN_AQUI"
 
 echo "$GHCR_PAT" | docker login ghcr.io -u "$GITHUB_USER" --password-stdin
 ```
-*Se aparecer "Login Succeeded", estamos prontos.*
 
-> **Nota:** Como faremos o deploy usando `--with-registry-auth`, basta logar no Manager (`kvm8`) que ele repassa as credenciais para os Workers baixarem as imagens.
+_Se aparecer "Login Succeeded", estamos prontos._
+
+> **Nota:** Como faremos o deploy usando `--with-registry-auth`, basta logar no
+> Manager (`kvm8`) que ele repassa as credenciais para os Workers baixarem as
+> imagens.
 
 ## 21. Secrets (Segurança Máxima)
 
-Em vez de deixar senhas em arquivos de texto (`.env`), usamos o **Docker Secrets**. O Swarm encripta esses dados e só entrega na memória do container que precisa deles.
+Em vez de deixar senhas em arquivos de texto (`.env`), usamos o **Docker
+Secrets**. O Swarm encripta esses dados e só entrega na memória do container que
+precisa deles.
 
 **Execute no `kvm8`:**
 
@@ -858,21 +988,29 @@ docker secret ls
 ```
 
 ### 🔐 Configuração no GitHub (Actions)
-Para que o GitHub consiga "falar" com nosso Webhook com segurança, precisamos cadastrar esse mesmo segredo lá.
 
-1. Vá no seu repositório -> **Settings** -> **Secrets and variables** -> **Actions**.
+Para que o GitHub consiga "falar" com nosso Webhook com segurança, precisamos
+cadastrar esse mesmo segredo lá.
+
+1. Vá no seu repositório -> **Settings** -> **Secrets and variables** ->
+   **Actions**.
 2. Clique em **New repository secret**.
 3. Crie dois secrets:
-    *   **Nome:** `DEPLOY_WEBHOOK_SECRET`
-        *   **Valor:** (O mesmo hash que você usou no comando `github_webhook_secret` acima)
-    *   **Nome:** `DEPLOY_WEBHOOK_URL`
-        *   **Valor:** `https://myswarm.cloud/api/webhook/github` (Ajuste para **SEU** domínio do `kvm8`)
+   - **Nome:** `DEPLOY_WEBHOOK_SECRET`
+     - **Valor:** (O mesmo hash que você usou no comando `github_webhook_secret`
+       acima)
+   - **Nome:** `DEPLOY_WEBHOOK_URL`
+     - **Valor:** `https://myswarm.cloud/api/webhook/github` (Ajuste para
+       **SEU** domínio do `kvm8`)
 
-> **Importante:** Salve esses valores em um gerenciador de senhas (Bitwarden/1Password). Recuperar secrets de dentro do Swarm depois de criados dá trabalho.
+> **Importante:** Salve esses valores em um gerenciador de senhas
+> (Bitwarden/1Password). Recuperar secrets de dentro do Swarm depois de criados
+> dá trabalho.
 
 ## 22. Instalar o Watcher (Deploy Automático)
 
-Para que o deploy aconteça automaticamente quando o GitHub nos avisar, usamos um pequeno script ("watcher") que fica olhando para a pasta do NFS.
+Para que o deploy aconteça automaticamente quando o GitHub nos avisar, usamos um
+pequeno script ("watcher") que fica olhando para a pasta do NFS.
 
 **Execute no `kvm8`:**
 
@@ -890,11 +1028,13 @@ sudo systemctl enable --now webhook-watcher
 sudo systemctl status webhook-watcher
 ```
 
-> **Como testar:** Se você rodar `sudo journalctl -u webhook-watcher -f`, verá o log do serviço esperando por arquivos na pasta compartilhada.
+> **Como testar:** Se você rodar `sudo journalctl -u webhook-watcher -f`, verá o
+> log do serviço esperando por arquivos na pasta compartilhada.
 
 ## 23. O Grande Deploy
 
-Chegou a hora. Vamos subir a stack pela primeira vez manualmente para garantir que tudo funciona.
+Chegou a hora. Vamos subir a stack pela primeira vez manualmente para garantir
+que tudo funciona.
 
 **Execute no `kvm8`:**
 
@@ -910,6 +1050,7 @@ docker stack deploy -d -c docker/stack.yaml dockerswarmp1 --with-registry-auth
 ```
 
 ### Validando se subiu
+
 Agora é monitorar até que todos os serviços estejam "Running".
 
 ```bash
@@ -922,16 +1063,20 @@ docker service logs dockerswarmp1_traefik -f
 ```
 
 **O que esperar:**
+
 1.  O `postgres` e o `traefik` devem subir no `kvm8`.
 2.  A `api` e o `frontend` devem se espalhar pelos nós (`kvm2`, `kvm4`, `kvm8`).
 3.  Se tudo estiver verde, acesse seu domínio no navegador!
 
 ## 24. Macetes de Observabilidade (Manual)
 
-Cluster distribuído é chato de debugar porque os containers não estão mais "logo ali". Aqui vão uns truques para não ficar perdido.
+Cluster distribuído é chato de debugar porque os containers não estão mais "logo
+ali". Aqui vão uns truques para não ficar perdido.
 
 ### Onde está meu container?
-Se você quer entrar na API (`docker exec`), primeiro precisa descobrir em qual VPS ela caiu.
+
+Se você quer entrar na API (`docker exec`), primeiro precisa descobrir em qual
+VPS ela caiu.
 
 ```bash
 # Mostra em qual NÓ (kvm2/4/8) cada réplica está
@@ -939,6 +1084,7 @@ docker service ps dockerswarmp1_api
 ```
 
 Depois, acesse o nó via SSH e rode o exec lá:
+
 ```bash
 ssh kvm2
 docker ps | grep api
@@ -946,7 +1092,9 @@ docker exec -it <CONTAINER_ID> sh
 ```
 
 ### Logs centralizados (Mais ou menos)
-Felizmente, você pode ver os logs agregados de TODAS as réplicas a partir do Manager, sem precisar ir em cada máquina.
+
+Felizmente, você pode ver os logs agregados de TODAS as réplicas a partir do
+Manager, sem precisar ir em cada máquina.
 
 ```bash
 # Vê logs de todas as APIs misturados
@@ -957,6 +1105,7 @@ docker service logs -f --tail=100 dockerswarmp1_api --no-trunc
 ```
 
 ### Ver a "saúde" visualmente
+
 ```bash
 # Mostra o status visual de todos os nós e serviços
 docker node ls
@@ -965,16 +1114,19 @@ docker stack ps dockerswarmp1
 
 ## 25. Manutenção: Rotação de Logs (Essencial)
 
-Por padrão, o Docker guarda logs eternamente. Se sua API for "tagarela", o disco enche e o servidor trava. Vamos configurar um limite **no Host**.
+Por padrão, o Docker guarda logs eternamente. Se sua API for "tagarela", o disco
+enche e o servidor trava. Vamos configurar um limite **no Host**.
 
 **Execute em TODOS os nós (`kvm2`, `kvm4`, `kvm8`):**
 
 1.  Crie ou edite `/etc/docker/daemon.json`:
+
     ```bash
     sudo vim /etc/docker/daemon.json
     ```
 
 2.  Adicione a configuração de rotação (máximo 3 arquivos de 10MB):
+
     ```json
     {
       "log-driver": "json-file",
@@ -990,8 +1142,9 @@ Por padrão, o Docker guarda logs eternamente. Se sua API for "tagarela", o disc
     sudo systemctl restart docker
     ```
 
-> **Dica Extra (Limpar Logs Agora):**
-> Se você já tem gigas de log e quer zerar tudo sem reiniciar containers:
+> **Dica Extra (Limpar Logs Agora):** Se você já tem gigas de log e quer zerar
+> tudo sem reiniciar containers:
+>
 > ```bash
 > sudo find /var/lib/docker/containers -name "*-json.log" -type f -print -exec truncate -s 0 {} \;
 > ```
@@ -999,38 +1152,17 @@ Por padrão, o Docker guarda logs eternamente. Se sua API for "tagarela", o disc
 ## 26. Conclusão e Próximos Passos
 
 Parabéns! Você tem um cluster **Docker Swarm** rodando em 3 VPSs, com:
-*   ✅ **Segurança:** Firewall Borda + UFW + WireGuard + SSH Hardening.
-*   ✅ **Storage:** NFS com permissões restritas e montagem resiliente.
-*   ✅ **Rede:** Traefik com TLS automático e rede interna isolada.
-*   ✅ **Automação:** Webhook para deploy contínuo via GitHub Actions.
+
+- ✅ **Segurança:** Firewall Borda + UFW + WireGuard + SSH Hardening.
+- ✅ **Storage:** NFS com permissões restritas e montagem resiliente.
+- ✅ **Rede:** Traefik com TLS automático e rede interna isolada.
+- ✅ **Automação:** Webhook para deploy contínuo via GitHub Actions.
 
 **O que ficou de fora (mas vale estudar):**
-*   **Limites de Recursos:** Definir CPU/RAM limits no `stack.yaml` para evitar vizinhos barulhentos.
-*   **Monitoramento:** Prometheus + Grafana para métricas reais.
-*   **Backup:** Script para dump do Postgres e rsync da pasta do NFS.
+
+- **Limites de Recursos:** Definir CPU/RAM limits no `stack.yaml` para evitar
+  vizinhos barulhentos.
+- **Monitoramento:** Prometheus + Grafana para métricas reais.
+- **Backup:** Script para dump do Postgres e rsync da pasta do NFS.
 
 Agora é com você. Divirta-se com seu Swarm! 🚀
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

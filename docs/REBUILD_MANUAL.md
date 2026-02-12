@@ -361,11 +361,11 @@ Ordem recomendada (no `kvm8`):
 
 ## (Extra) Rotacao de logs do Docker (recomendado)
 
-Por padrao, o Docker guarda logs em `/var/lib/docker/containers/*/*-json.log`
-e isso cresce sem limite. Em producao e normal **rotacionar** esses arquivos.
+Por padrao, o Docker guarda logs em `/var/lib/docker/containers/*/*-json.log` e
+isso cresce sem limite. Em producao e normal **rotacionar** esses arquivos.
 
-Isso e configuracao **no host** (VPS), nao no container. Aplique em **todos**
-os nos (kvm2, kvm4, kvm8).
+Isso e configuracao **no host** (VPS), nao no container. Aplique em **todos** os
+nos (kvm2, kvm4, kvm8).
 
 Crie ou edite `/etc/docker/daemon.json`:
 
@@ -481,7 +481,8 @@ set +a
 docker stack deploy -c docker/stack.yaml dockerswarmp1 --with-registry-auth
 ```
 
-Se `APP_DOMAIN` estiver vazio, o Traefik vai tentar `Host(\`\`)` e falhar no ACME.
+Se `APP_DOMAIN` estiver vazio, o Traefik vai tentar `Host(\`\`)` e falhar no
+ACME.
 
 Validar:
 

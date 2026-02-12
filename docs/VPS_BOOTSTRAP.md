@@ -66,9 +66,11 @@ Drop     Any       Any         Any              Any
 - **Drop all no final** → firewall default deny (correto)
 
 Nota:
-- Se voce vai rodar Swarm e NFS **por dentro do WireGuard** (recomendado neste projeto),
-  nao precisa expor `2377/7946/4789/2049` na internet. Basta `51820/udp` entre os nos,
-  e `80/443` no edge (`kvm8`). O UFW vai permitir essas portas apenas via `wg0`.
+
+- Se voce vai rodar Swarm e NFS **por dentro do WireGuard** (recomendado neste
+  projeto), nao precisa expor `2377/7946/4789/2049` na internet. Basta
+  `51820/udp` entre os nos, e `80/443` no edge (`kvm8`). O UFW vai permitir
+  essas portas apenas via `wg0`.
 
 ---
 
@@ -85,8 +87,8 @@ Este script deve ser executado no seu usuário (não como root).
 - O script desabilita autenticação por senha e root no SSH. Garanta que sua
   chave já está em `~/.ssh/authorized_keys` antes de rodar, senão você pode se
   trancar fora.
-- `NOPASSWD sudo` é opcional e **vem desativado**. Se você ativar (para facilitar
-  bootstrap), remova depois.
+- `NOPASSWD sudo` é opcional e **vem desativado**. Se você ativar (para
+  facilitar bootstrap), remova depois.
 
 Variáveis úteis (exemplos):
 
@@ -134,6 +136,7 @@ sudo wg show
 ```
 
 Esperado:
+
 - `wg0` com IP correto (`10.100.0.2/24`, `10.100.0.4/24`, `10.100.0.8/24`)
 - `latest handshake` recente com os peers
 
@@ -150,6 +153,7 @@ sudo ufw status verbose
 ```
 
 Esperado (baseline do projeto):
+
 - `22/tcp` permitido apenas do seu IP (`ADMIN_SSH_CIDR`)
 - `51820/udp` (WireGuard) permitido
 - Swarm/NFS permitidos apenas via WireGuard (`in on wg0 from 10.100.0.0/24`)
@@ -212,9 +216,11 @@ Se aparecer `NOPASSWD`, ok durante o bootstrap, mas lembre de remover ao final.
 ## WireGuard (Semi)
 
 Nota importante:
-- Cada VPS tem **um** arquivo `wg0.conf` e ele deve ter **um** bloco `[Interface]`.
-- O exemplo abaixo mostra blocos separados (um por VPS) para referencia. Nao copie
-  3x `[Interface]` no mesmo arquivo.
+
+- Cada VPS tem **um** arquivo `wg0.conf` e ele deve ter **um** bloco
+  `[Interface]`.
+- O exemplo abaixo mostra blocos separados (um por VPS) para referencia. Nao
+  copie 3x `[Interface]` no mesmo arquivo.
 
 ```
 [Interface]
