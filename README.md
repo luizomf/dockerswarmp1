@@ -19,12 +19,6 @@ O guia canônico mostrado no vídeo está em:
 - **[`docs/DEV_GUIDE.md`](docs/DEV_GUIDE.md)** (passo a passo completo, ordem
   oficial dos comandos)
 
-Se você quiser contexto adicional:
-
-- [`docs/MANUAL_DO_VIDEO.md`](docs/MANUAL_DO_VIDEO.md) (roteiro original)
-- [`docs/REBUILD_MANUAL.md`](docs/REBUILD_MANUAL.md) (rebuild/disaster recovery)
-- [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md) (hardening e riscos)
-
 ## Arquitetura (Resumo)
 
 - 3 nós Docker Swarm conectados por WireGuard.
