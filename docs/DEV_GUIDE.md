@@ -3,8 +3,19 @@
 Este documento é um registro fiel e passo a passo de todas as etapas executadas
 no vídeo para subir o cluster Docker Swarm.
 
-> **Nota:** Este guia assume que você tem 3 VPS na Hostinger (KVM 2 ou superior)
-> e um domínio configurado.
+> **Nota:** Este guia usa o cenário do vídeo como referência: 3 nós
+> (`kvm2`,`kvm4`,`kvm8`) e domínios públicos.
+
+> **Escopo Real (sem amarras):** Você pode usar qualquer provedor (Hostinger,
+> outro VPS, ou até VM local). Para seguir o fluxo completo com acesso público
+> (Traefik + HTTPS + webhook), o mínimo é **1 servidor Linux com Docker + 1
+> domínio apontado para ele**.
+>
+> **Caminho canônico do vídeo:** Para reproduzir exatamente os passos e nomes
+> deste guia, use **3 nós** (`kvm2`, `kvm4`, `kvm8`).
+>
+> **Regra prática:** Sempre que aparecer "Execute em TODAS as VPSs", execute em
+> todos os nós que você tiver. Se tiver só 1 servidor, execute uma única vez.
 
 ## Patrocínio (Hostinger)
 
@@ -14,14 +25,6 @@ Este projeto e o vídeo foram patrocinados pela Hostinger.
 - Cupom: `OTAVIOMIRANDA`
 - Benefício: `OTAVIOMIRANDA` dá **+10%** de desconto extra sobre o desconto do
   link.
-
-## Status Atual
-
-- [ ] VPS Formatadas
-- [ ] Acesso SSH Inicial
-- [ ] Configuração de Rede
-- [ ] Swarm Init
-- [ ] Deploy
 
 ## 0. Preparação e Desmontagem (Opcional)
 
@@ -111,6 +114,9 @@ garante que os serviços sejam migrados para outros nós antes do desligamento.
 Para garantir um ambiente limpo, formatamos todas as 3 VPSs (`kvm2`, `kvm4`,
 `kvm8`) usando o painel da Hostinger.
 
+> **Se você não usa Hostinger:** Faça o procedimento equivalente no seu provedor
+> (ou recrie a VM local) para começar com um Linux limpo com Docker instalado.
+
 **No hPanel:**
 
 1. Acesse **VPS** > **Gerenciar** (em cada nó).
@@ -176,6 +182,9 @@ adequados._
 Antes de configurar o firewall interno (UFW), configuramos o **Firewall da
 Hostinger** (hPanel) para proteger a rede antes mesmo que o tráfego chegue nas
 VPSs.
+
+> **Se você não usa hPanel:** Replique as mesmas regras no firewall de borda do
+> seu provedor/hypervisor (conceito idêntico: whitelist + drop final).
 
 A política adotada é **Whitelist**: Bloqueia tudo (Drop) e libera apenas o
 necessário.

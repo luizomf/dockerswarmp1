@@ -127,6 +127,10 @@ All notable changes to this project are documented here. This file records
   `docs/DEV_GUIDE.md`
 - Added Hostinger sponsor link and coupon (`OTAVIOMIRANDA`) to README and
   `docs/DEV_GUIDE.md`
+- Removed the stale "Status Atual" checklist from `docs/DEV_GUIDE.md` to keep
+  the guide focused on executable steps
+- Clarified in `docs/DEV_GUIDE.md` that the guide works with any provider/local
+  VM, while keeping the 3-node Hostinger setup as the canonical video example
 
 ## 2026-02-07
 
