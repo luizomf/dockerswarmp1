@@ -1,0 +1,738 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Firewall</title>
+    <meta charset="utf8" />
+
+    <style>
+      body,
+      html {
+        min-height: 100%;
+      }
+
+      html {
+        font-size: 62.5%;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        line-height: 1.5;
+        font-size: 1.8rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      .responsive-table {
+        max-width: 100%;
+        min-height: 100vh;
+        overflow: hidden;
+        overflow-x: auto;
+        padding: 2.4rem;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 1rem;
+        font-family:
+          'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Source Code Pro',
+          monospace;
+        font-weight: 400;
+      }
+
+      table {
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 1px solid rgba(235, 235, 255, 1);
+        border-radius: 12px;
+      }
+
+      th:first-child {
+        border-top-left-radius: 12px;
+      }
+
+      th:last-child {
+        border-top-right-radius: 12px;
+      }
+
+      tr:last-child td:first-child {
+        border-bottom-left-radius: 12px;
+      }
+
+      tr:last-child td:last-child {
+        border-bottom-right-radius: 12px;
+      }
+
+      th,
+      td {
+        padding: 1rem 1.5rem;
+        border: 1px solid rgba(235, 235, 255, 1);
+        text-align: left;
+        text-transform: uppercase;
+      }
+
+      th {
+        background-color: rgba(240, 240, 255, 1);
+        font-weight: bold;
+      }
+
+      tbody tr {
+        background-color: rgba(253, 253, 255, 1);
+        transition: background-color 300ms ease-in-out;
+      }
+
+      tbody tr:nth-child(even) {
+        background-color: rgba(250, 250, 255, 1);
+      }
+
+      tbody tr:hover {
+        background-color: rgba(240, 240, 255, 1);
+      }
+
+      caption {
+        padding: 1rem 0.5rem;
+        font-size: 1.6rem;
+        font-weight: bold;
+        text-align: left;
+        caption-side: top;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="responsive-table">
+      <table>
+        <thead>
+          <tr>
+            <th>
+              <div>
+                <div>A&ccedil;&atilde;o</div>
+              </div>
+            </th>
+            <th>
+              <div>
+                <div>Protocolo</div>
+              </div>
+            </th>
+            <th>
+              <div>
+                <div>Porta (ou intervalo)</div>
+              </div>
+            </th>
+            <th>
+              <div>
+                <div>Fonte</div>
+              </div>
+            </th>
+            <th>
+              <div>
+                <div>Detalhe da fonte</div>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>TCP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>187.108.118.25</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>TCP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>89.116.73.152</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>TCP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>191.101.70.130</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>TCP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>76.13.71.178</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>4789</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>76.13.71.178</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>4789</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>191.101.70.130</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>4789</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>89.116.73.152</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>7946</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>89.116.73.152</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>7946</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>191.101.70.130</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>7946</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>76.13.71.178</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>ICMP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>191.101.70.130</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>ICMP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>76.13.71.178</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>ICMP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>89.116.73.152</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>HTTPS</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>443</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>HTTP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>80</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>51820</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>191.101.70.130</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>51820</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>89.116.73.152</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>51820</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>187.108.118.25</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>UDP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>51820</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>76.13.71.178</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>TCP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>8080</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>187.108.118.25</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>accept</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>ICMP</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>custom</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>187.108.118.25</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <p>drop</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+            <td>
+              <div>
+                <p>any</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
